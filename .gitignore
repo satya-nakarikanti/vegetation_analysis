@@ -1,0 +1,52 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Test and coverage output
+.pytest_cache/
+.coverage
+htmlcov/
+pyproject.toml
+
+# Type checker caches
+.mypy_cache/
+.ruff_cache/
+.ultralytics/
+.matplotlib/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Logs and runtime output
+logs/
+outputs/
+data/raw/
+data/processed/
+
+# Model weights and large local assets
+models/
+*.pt
+*.pth
+*.onnx
+*.safetensors
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
