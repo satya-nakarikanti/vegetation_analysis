@@ -33,6 +33,7 @@ scope.
 vegetation_analysis/
 |-- demo/
 |   `-- README.md
+    `-- sample.jpg (optional)
 |-- docs/
 |   |-- CHANGELOG.md
 |   |-- CONTRIBUTION_GUIDELINES.md
@@ -40,7 +41,7 @@ vegetation_analysis/
 |   |-- PROJECT_STATUS.md
 |   |-- RESEARCH_LOG.md
 |   `-- TODO.md
-|-- outputs/
+|-- outputs/ (generated at runtime, not tracked by Git)
 |   `-- demo/
 |       |-- overlay.png
 |       `-- statistics.json
@@ -221,7 +222,7 @@ Completed work:
 - Segmentation package with a clean public API.
 - Demo orchestration script (`scripts/run_demo.py`).
 - Automated tests for loader, segmenter, mask utilities, and visualization.
-- Validated against real images.
+- Validated on synthetic and representative real images..
 
 ## Upcoming Phase
 
@@ -248,12 +249,41 @@ Python 3.11 or newer is required.
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
+
 python -m pip install --upgrade pip
+
+pip install -r requirements.txt
 pip install -r requirements-dev.txt
 ```
 
 If `python` is not available on PATH, install Python 3.11+ and enable the
 option to add Python to PATH during installation.
+
+## First-Time Setup
+
+After cloning the repository:
+
+```powershell
+python scripts\verify_environment.py
+pytest
+python scripts\run_demo.py
+```
+
+If all three commands succeed, the environment has been configured correctly.
+
+## Model Weights
+
+The Phase 2 implementation depends on the FastSAM model weights.
+
+The repository includes:
+
+```
+FastSAM-s.pt
+```
+
+No additional download is required.
+
+Future phases may require additional model weights (CLIP, EfficientNetV2, Depth Anything V2). Those requirements will be documented when those phases begin.
 
 ## Running the Project
 
@@ -322,6 +352,23 @@ The script also prints a runtime summary to the console:
     Statistics  : outputs\demo\statistics.json
 ------------------------------------------------------------
 ```
+## Repository Status
+
+Current Stable Release:
+
+**Phase 2**
+
+Implemented:
+
+- Environment setup
+- FastSAM segmentation
+- Automated testing
+- Demo runner
+- Documentation
+
+Current Research Focus:
+
+Segmentation evaluation before beginning CLIP integration.
 
 ## Future Scope
 

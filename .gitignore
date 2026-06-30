@@ -3,7 +3,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-
 # Virtual environments
 .venv/
 venv/
@@ -18,7 +17,6 @@ dist/
 .pytest_cache/
 .coverage
 htmlcov/
-pyproject.toml
 
 # Type checker caches
 .mypy_cache/
@@ -37,16 +35,8 @@ outputs/
 data/raw/
 data/processed/
 
-# Model weights and large local assets
-models/
-*.pt
-*.pth
-*.onnx
-*.safetensors
-
-# OS/editor files
+# IDE / OS
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
-
