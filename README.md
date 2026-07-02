@@ -6,11 +6,21 @@ This project is a production-oriented computer vision module for vegetation
 analysis near electric poles. It will later integrate with an existing electric
 pole inspection application and run only when the user selects Tree Analysis.
 
-The module is built phase by phase. Phase 2 (FastSAM segmentation) is now
-complete. The current repository contains a working segmentation pipeline that
-can detect and mask objects in an image. CLIP-based classification, species
-identification, depth estimation, distance estimation, and API integration are
-planned for future phases and have not been implemented yet.
+The module is built phase by phase. Phase 2 (FastSAM segmentation) is complete
+and archived as the baseline. After evaluating FastSAM on real electric-pole
+images, sparse tree canopies were found to fragment into multiple disconnected
+masks, making the originally planned FastSAM → CLIP pipeline unsuitable.
+
+The active pipeline now uses Grounding DINO for open-set object detection.
+Phase 3A is complete and provides production-ready tree and utility pole
+detection using natural-language prompts.
+
+Grounding DINO replaces the originally planned FastSAM → CLIP pipeline after
+evaluation showed that FastSAM fragmented sparse tree canopies into multiple
+disconnected masks.
+
+Future phases will use SAM 2 for mask generation, followed by species
+classification, depth estimation, distance estimation, and API integration.
 
 ## Objectives
 
@@ -47,6 +57,7 @@ vegetation_analysis/
 |       `-- statistics.json
 |-- scripts/
 |   |-- run_demo.py
+|   |-- run_grounding_demo.py
 |   `-- verify_environment.py
 |-- src/
 |   `-- vegetation_analysis/
@@ -54,7 +65,15 @@ vegetation_analysis/
 |       |-- config/
 |       |   `-- settings.py
 |       |-- core/
-|       |-- segmentation/
+|       |-- grounding/                  ← Phase 3A Grounding DINO detection modules
+|       |   |-- __init__.py
+|       |   |-- constants.py
+|       |   |-- detector.py
+|       |   |-- grounding_dino_loader.py
+|       |   |-- prompts.py
+|       |   |-- schemas.py
+|       |   `-- visualization.py
+|       |-- segmentation/               ← Phase 2 archived baseline
 |       |   |-- fastsam_loader.py
 |       |   |-- mask_utils.py
 |       |   |-- schemas.py
@@ -63,6 +82,9 @@ vegetation_analysis/
 |       `-- utils/
 |           `-- logging.py
 |-- tests/
+|   |-- test_grounding_detector.py
+|   |-- test_grounding_loader.py
+|   |-- test_grounding_prompts_and_visualization.py
 |   |-- test_segmentation_loader.py
 |   |-- test_segmentation_pipeline.py
 |   `-- test_settings.py
@@ -85,34 +107,51 @@ Folder responsibilities:
 - `src/vegetation_analysis/config`: runtime settings loaded from environment
   variables.
 - `src/vegetation_analysis/core`: future computer vision and domain logic.
-- `src/vegetation_analysis/segmentation`: Phase 2 FastSAM segmentation modules.
+- `src/vegetation_analysis/grounding`: Production Grounding DINO implementation responsible for
+  model loading, prompt generation, object detection,
+  structured detection results, and visualization.
+- `src/vegetation_analysis/segmentation`: Phase 2 FastSAM segmentation modules
+  (archived baseline — do not delete).
 - `src/vegetation_analysis/utils`: shared infrastructure helpers.
 - `tests`: automated tests.
 
 ## Current Implementation
 
-Only segmentation has been implemented. The pipeline currently:
+The repository currently contains two completed computer vision stages.
 
-1. Accepts an image (file path, NumPy array, or PIL Image).
-2. Loads FastSAM using the Ultralytics package.
-3. Runs inference and extracts boolean masks and contours for each detected
-   object.
-4. Returns structured `SegmentedObject` instances containing a mask, bounding
-   box, contour, and pixel area.
-5. Generates a colour-coded mask overlay image.
+Phase 2 (archived baseline)
 
-No object classification, species identification, depth estimation, or distance
-measurement has been implemented.
+• FastSAM segmentation
+• Object masks
+• Bounding boxes
+• Overlay visualization
+
+Phase 3A
+
+• Grounding DINO model loader
+• Prompt builder
+• Open-set object detection
+• Structured DetectionResult output
+• Detection visualization
+• Demo script
+• Automated tests
+
+Grounding DINO is now the active object detection pipeline.
+
+FastSAM remains in the repository as the archived Phase 2 baseline for
+reference and benchmarking.
 
 ## Current Limitations
 
-- Object detection produces all visible objects without label assignment.
-  There is no way to distinguish a tree from a pole at this stage.
-- Sparse or thin tree canopies are segmented inconsistently. Dense, solid
-  objects produce more reliable masks.
-- No CLIP, depth, or distance logic is present. Those capabilities belong to
-  future phases.
-- The module does not expose an API endpoint yet.
+Current limitations:
+
+- Grounding DINO currently produces bounding boxes only.
+- Object masks are not yet generated.
+- SAM 2 integration has not started.
+- Tree species classification has not started.
+- Depth estimation has not started.
+- Distance estimation has not started.
+- API integration has not started.
 
 ## Architecture Diagram
 
@@ -120,31 +159,30 @@ The planned full pipeline is shown below. Implemented stages are marked.
 
 ```text
 Uploaded Image
-    |
-    v
-FastSAM  ← IMPLEMENTED (Phase 2)
-    |
-    v
-Object Masks  ← IMPLEMENTED (Phase 2)
-    |
-    v
-CLIP Mask Identification  ← planned (Phase 3)
-    |
-    +---> Tree Mask
-    |
-    +---> Pole Mask
-             |
-             v
-EfficientNetV2 Species Classification  ← planned
-             |
-             v
-Depth Anything V2 Metric  ← planned
-             |
-             v
-Distance Engine  ← planned
-             |
-             v
-API Response  ← planned
+      |
+      v
+Grounding DINO  ← IMPLEMENTED (Phase 3A)
+      |
+      v
+Tree / Pole Bounding Boxes
+      |
+      v
+SAM 2 Mask Generation  ← Phase 3B
+      |
+      v
+Tree & Pole Masks
+      |
+      v
+EfficientNetV2 Species Classification
+      |
+      v
+Depth Anything V2
+      |
+      v
+Distance Engine
+      |
+      v
+API Response
 ```
 
 ## Development Workflow
@@ -210,7 +248,7 @@ Documentation tracking was expanded before starting Phase 2.
 
 ### Phase 2: FastSAM Integration
 
-Status: ✅ Completed.
+Status: ✅ Completed. Archived as the Phase 2 baseline.
 
 Completed work:
 
@@ -222,25 +260,48 @@ Completed work:
 - Segmentation package with a clean public API.
 - Demo orchestration script (`scripts/run_demo.py`).
 - Automated tests for loader, segmenter, mask utilities, and visualization.
-- Validated on synthetic and representative real images..
+- Validated on synthetic and representative real images.
+
+Evaluation finding: FastSAM reliably segments utility poles but consistently
+fragments sparse tree canopies into multiple disconnected masks. This makes the
+FastSAM → CLIP pipeline unsuitable. Architecture has changed to Grounding DINO.
+
+### Phase 3A: Grounding DINO Detection
+
+Status: ✅ Completed.
+
+Completed work:
+
+- Grounding DINO loader
+- Hugging Face model loading
+- Prompt builder
+- Detection pipeline
+- Detection schemas
+- Detection visualization
+- Demo runner
+- Automated unit tests
+- CPU inference validation
+- Real-image validation
+
+Evaluation:
+
+Grounding DINO successfully detects both utility poles and trees using
+natural-language prompts and produces structured DetectionResult objects.
+
+FastSAM remains archived as the Phase 2 baseline.
 
 ## Upcoming Phase
 
-### Phase 3: CLIP Integration
+### Phase 3B: SAM 2 Integration
 
-Status: Pending — segmentation evaluation must be finalized first.
+Status: Planned.
 
 Planned work:
 
-- Load CLIP.
-- Pass masked objects to CLIP.
-- Identify tree and pole masks.
-- Return confidence scores.
-- Explain prompt engineering approach.
-- Verify classification results.
-
-Future phases will cover species classification, depth estimation, distance
-estimation, API integration, and production hardening.
+- Generate masks from Grounding DINO bounding boxes.
+- Produce TreeMask and PoleMask objects.
+- Compare SAM 2 performance with archived FastSAM masks.
+- Record evaluation results.
 
 ## Installation
 
@@ -254,6 +315,8 @@ python -m pip install --upgrade pip
 
 pip install -r requirements.txt
 pip install -r requirements-dev.txt
+
+pip install transformers
 ```
 
 If `python` is not available on PATH, install Python 3.11+ and enable the
@@ -267,23 +330,25 @@ After cloning the repository:
 python scripts\verify_environment.py
 pytest
 python scripts\run_demo.py
+python scripts\run_grounding_demo.py
 ```
 
 If all three commands succeed, the environment has been configured correctly.
 
 ## Model Weights
 
-The Phase 2 implementation depends on the FastSAM model weights.
+Phase 2
 
-The repository includes:
-
-```
 FastSAM-s.pt
-```
 
-No additional download is required.
+Used only by the archived segmentation pipeline.
 
-Future phases may require additional model weights (CLIP, EfficientNetV2, Depth Anything V2). Those requirements will be documented when those phases begin.
+Phase 3A
+
+Grounding DINO weights are downloaded automatically from Hugging Face on the
+first execution and cached locally.
+
+No manual download is required.
 
 ## Running the Project
 
@@ -323,56 +388,75 @@ python scripts\run_demo.py path\to\image.jpg
 Place a representative image at `demo\sample.jpg` to use it as the persistent
 default input.
 
+### Phase 3A Grounding DINO Demo
+
+Run the Grounding DINO pipeline:
+
+python scripts\run_grounding_demo.py
+
+Outputs:
+
+outputs/demo/grounding_dino_annotated.png
+
+outputs/demo/grounding_dino_statistics.json
+
 ### Expected Demo Outputs
 
-All outputs are written to `outputs\demo\`:
+All generated outputs are written to `outputs\demo\`:
 
 | File | Description |
 |---|---|
-| `overlay.png` | Source image with colour-coded mask overlays and contours |
-| `statistics.json` | Per-object bounding boxes and areas; inference summary |
+| `overlay.png` | FastSAM segmentation overlay showing colour-coded object masks (Phase 2 archived baseline). |
+| `statistics.json` | FastSAM segmentation statistics including object count, bounding boxes, pixel areas, and inference summary. |
+| `grounding_dino_annotated.png` | Grounding DINO detection visualization showing labelled bounding boxes, confidence scores, and detected objects. |
+| `grounding_dino_statistics.json` | Grounding DINO detection statistics including detected labels, confidence scores, bounding boxes, inference time, model information, and prompt used. |
 
-The script also prints a runtime summary to the console:
+The Grounding DINO demo also prints a runtime summary to the console:
 
 ```text
 ------------------------------------------------------------
-  Vegetation Analysis — Phase 2 Demo
+  Vegetation Analysis - Phase 3AGrounding DINO Demo
 ------------------------------------------------------------
-  Image source    : path\to\image.jpg
-  Image size      : 1920 × 1080 px
-  Inference time  : 1.243 s
-  Objects found   : 7
+  Image source    : demo\sample.jpg
+  Image size      : 1080 x 1440 px
+  Prompt          : tree . utility pole .
+  Inference time  : 8.954 s
+  Boxes found     : 3
 
-  Per-object summary:
-    Object   0 | area=  3,200 px | bbox=(120,45)→(390,310)
-    ...
+  Detection summary:
+    utility pole     | conf=0.607 | bbox=(271,478)->(767,1437)
+    utility pole     | conf=0.452 | bbox=(507,558)->(766,1437)
+    tree             | conf=0.664 | bbox=(505,3)->(1078,1149)
 
   Output files:
-    Overlay     : outputs\demo\overlay.png
-    Statistics  : outputs\demo\statistics.json
+    Annotated   : outputs\demo\grounding_dino_annotated.png
+    Statistics  : outputs\demo\grounding_dino_statistics.json
 ------------------------------------------------------------
 ```
 ## Repository Status
 
-Current Stable Release:
+Current Stable Release
 
-**Phase 2**
+v0.3.0
 
-Implemented:
+Completed
 
-- Environment setup
-- FastSAM segmentation
-- Automated testing
-- Demo runner
-- Documentation
+✓ Phase 1 Foundation
 
-Current Research Focus:
+✓ Phase 2 FastSAM
 
-Segmentation evaluation before beginning CLIP integration.
+✓ Phase 3A Grounding DINO
+
+Current Development
+
+Phase 3B
+
+SAM 2 Integration
 
 ## Future Scope
 
-- CLIP-based tree and pole mask identification.
+- SAM 2 integration using Grounding DINO detections.
+- SAM 2 mask generation from Grounding DINO bounding boxes.
 - Tree species classification.
 - Metric depth estimation.
 - Distance calculation between visible pole and tree edges.

@@ -5,18 +5,29 @@ updated whenever a meaningful task is completed.
 
 ## Current Phase
 
-Phase 2: FastSAM Integration.
+Phase 3A: Grounding DINO Detection.
 
-Status: ✅ Completed. Awaiting segmentation evaluation before Phase 3 begins.
+Status: ✅ Completed and verified.
+
+Grounding DINO is now the active object detection pipeline. The implementation
+has been validated using automated tests and real electric-pole images.
+Phase 3B (SAM 2 integration) is the next planned milestone.
 
 ## Overall Progress
 
 - Phase 1 foundation is complete and verified.
-- Documentation system has been expanded for long-term project tracking.
-- Phase 2 FastSAM integration is complete and verified against real images.
-- Phase 2 demo script (`scripts/run_demo.py`) is complete.
-- Segmentation evaluation is in progress before Phase 3 starts.
-- Phase 3 has not started.
+- Documentation system is complete and synchronized.
+- Phase 2 FastSAM integration is complete and archived as the baseline.
+- FastSAM evaluation on real electric-pole images showed reliable pole
+  segmentation but fragmented sparse tree canopies.
+- Architecture decision: Grounding DINO replaced the planned FastSAM → CLIP
+  pipeline.
+- Phase 3A Grounding DINO implementation is complete.
+- Grounding DINO successfully detects trees and utility poles using
+  natural-language prompts.
+- Automated testing, linting, type checking, and real-image validation have
+  been completed successfully.
+- Phase 3B (SAM 2 mask generation) is the next development stage.
 
 ## Completed Phases
 
@@ -67,7 +78,7 @@ Completed work:
 
 ### Phase 2: FastSAM Integration
 
-Status: ✅ Completed.
+Status: ✅ Completed. Archived as the Phase 2 baseline.
 
 Completed work:
 
@@ -88,120 +99,143 @@ Completed work:
 - Automated tests for all Phase 2 modules.
 - Validated against real images.
 
+Evaluation findings:
+
+- Pole segmentation is reliable. Utility poles are consistently isolated with
+  clean bounding boxes and accurate masks.
+- Sparse tree canopy segmentation is unreliable. Thin branches and fragmented
+  foliage are split into multiple disconnected masks, making the FastSAM → CLIP
+  pipeline unsuitable for tree identification.
+- The architecture has therefore changed: Grounding DINO replaces CLIP.
+
 Verification:
 
 - `pytest`: 13 tests pass.
 - `ruff check .`: no violations.
 - `mypy`: no type errors in 19 source files.
+- Demo script validated on representative real images.
 - Demo script: executes successfully with both synthetic and real images.
 - Overlay and statistics files verified in `outputs/demo/`.
 - Real FastSAM inference confirmed on CPU using `FastSAM-s.pt`.
 
 ---
 
-## Current Observations
+### Phase 3A: Grounding DINO Detection
 
-The following observations were recorded during Phase 2 validation on real
-images:
+Status: ✅ Completed.
 
-- Pole segmentation performs reliably. Utility poles are consistently isolated
-  as distinct objects with clean bounding boxes and accurate masks.
-- Sparse tree canopy segmentation remains inconsistent. Thin branches and
-  fragmented foliage are frequently split into multiple small masks or missed
-  entirely, producing less useful geometry than expected.
-- Dense, solid objects produce significantly better masks than sparse
-  vegetation. The segmentation model is well-suited for rigid structures.
-- A more thorough evaluation across a broader and more representative image
-  set is recommended before committing to the current segmentation strategy
-  for Phase 3.
+Completed work:
 
+- Grounding DINO model loader.
+- Hugging Face model loading.
+- Automatic CPU/CUDA device selection.
+- Prompt builder and vegetation prompt constants.
+- Grounding DINO inference pipeline.
+- Structured `DetectionBox` and `DetectionResult` schemas.
+- Detection visualization.
+- Grounding DINO demo script (`scripts/run_grounding_demo.py`).
+- Automated unit tests.
+- Compatibility with multiple Transformers API versions.
+- Real-image validation.
+
+Evaluation findings:
+
+- Utility poles are detected reliably.
+- Trees are detected reliably using prompt-based zero-shot detection.
+- Detection quality depends on prompt wording and confidence thresholds.
+- Bounding boxes are intentionally coarse and will be refined by SAM 2.
+
+Verification:
+
+- pytest: 27 tests passed.
+- ruff check .: passed.
+- mypy: passed.
+- Grounding DINO demo executed successfully.
+- Real-image inference verified.
 ---
 
 ## Current Tasks
 
-- Evaluate segmentation quality on a representative validation dataset.
-- Compare segmentation approaches for sparse vegetation before finalizing the
-  Phase 3 integration strategy.
-- Wait for explicit user approval before starting Phase 3.
-
+- Evaluate multiple Grounding DINO prompt strategies.
+- Compare Grounding DINO Tiny and Base checkpoints.
+- Begin Phase 3B (SAM 2 integration).
+- Validate Grounding DINO on a larger representative image dataset.
 ---
 
 ## Pending Tasks
 
-- Select and organize a representative validation image dataset.
-- Finalize segmentation strategy (current FastSAM approach versus alternatives)
-  before Phase 3 design begins.
-- Decide whether a persistent real sample image should be added to `demo/`.
+- Integrate SAM 2 mask generation.
+- Evaluate mask quality against the archived FastSAM baseline.
+- Tune Grounding DINO confidence thresholds.
+- Select the best prompt for vegetation detection.
+- Build a representative evaluation dataset.
 
 ---
 
 ## Future Phases
 
-- Phase 3: CLIP integration for identifying tree and pole masks. Start pending
-  segmentation evaluation and explicit user approval.
-- Later phase: Tree species classification using EfficientNetV2.
-- Later phase: Metric depth estimation using Depth Anything V2.
-- Later phase: Distance estimation engine.
-- Later phase: API integration.
-- Later phase: Production hardening and integration testing.
-
+- Phase 3B: SAM 2 mask generation.
+- Phase 4: Tree species classification.
+- Phase 5: Metric depth estimation using Depth Anything V2.
+- Phase 6: Distance estimation engine.
+- API integration.
+- Production hardening.
 ---
 
 ## Repository Status
 
 Stable development baseline.
 
-All Phase 2 modules are complete, tested, and verified. The repository is
-ready for segmentation evaluation before Phase 3 design begins.
+Completed:
 
+- Phase 1
+- Phase 2
+- Phase 3A
+
+Current development:
+
+Phase 3B — SAM 2 integration.
 ---
 
 ## Known Issues
 
-- Sparse tree canopy segmentation is inconsistent and requires further
-  investigation before the segmentation strategy is finalized.
+- Grounding DINO produces coarse bounding boxes by design.
+- Detection quality depends on prompt wording and confidence thresholds.
+- Mask generation has not yet been implemented.
 
 ---
 
 ## Risks
 
-- Future AI dependencies may be large and may require CUDA-specific
-  installation steps.
-- FastSAM, CLIP, depth estimation, and species classification may have
-  different runtime requirements and model license considerations.
-- Distance estimation from a single image may be approximate unless camera
-  calibration, scale references, or reliable metric depth models are available.
-- Sparse vegetation may require a different segmentation strategy or
-  post-processing approach for reliable Phase 3 classification input.
+- SAM 2 integration quality depends on Grounding DINO bounding-box accuracy.
+- Prompt engineering may significantly affect detection consistency.
+- Metric distance estimation remains dependent on reliable depth estimation.
 
 ---
 
 ## Technical Debt
 
-- No API framework has been selected yet.
-- No model registry or model-weight management strategy exists yet.
-- No validated image dataset has been defined yet.
-- No continuous integration workflow exists yet.
+- No API framework selected.
+- No model registry implemented.
+- No benchmark dataset defined.
+- No CI pipeline.
+- Prompt evaluation framework not yet implemented.
 
 ---
 
 ## Research Topics
 
-- Segmentation quality evaluation across a representative dataset.
-- Segmentation approaches for sparse vegetation (detector-assisted, alternative
-  models, mask merging).
-- CLIP prompt strategy for distinguishing pole and tree masks.
-- Tree species classification dataset and model choice.
-- Depth Anything V2 Metric setup, limitations, and calibration needs.
-- Distance estimation strategy using segmentation masks and depth outputs.
-- Edge extraction approaches for future distance estimation.
-
+- Grounding DINO Tiny vs Base comparison.
+- Prompt engineering for vegetation detection.
+- SAM 2 integration.
+- Tree species classification.
+- Depth Anything V2 calibration.
+- Distance estimation strategy.
 ---
 
 ## Notes
 
-- Do not start Phase 3 until segmentation evaluation is complete and the user
-  explicitly approves moving forward.
-- Do not implement vegetation growth prediction in the current roadmap.
-- Keep `CHANGELOG.md`, `PROJECT_STATUS.md`, `TODO.md`, and `RESEARCH_LOG.md`
-  synchronized after every meaningful task.
+- Phase 3A is complete.
+- Phase 3B (SAM 2) requires explicit approval before implementation.
+- Keep CHANGELOG.md, PROJECT_STATUS.md, TODO.md, and RESEARCH_LOG.md synchronized.
+- Retain FastSAM as the archived Phase 2 baseline until SAM 2 is fully validated.

@@ -4,6 +4,190 @@ This file is the engineering notebook for AI research, technical findings,
 architecture decisions, experiments, comparisons, rejected approaches, and open
 research questions. It should not contain implementation code.
 
+## 2026-07-02 - Grounding DINO Evaluation and Phase 3A Completion
+
+### Date
+
+2026-07-02
+
+### Research Topic
+
+Grounding DINO evaluation for vegetation analysis.
+
+### Objective
+
+Evaluate Grounding DINO as the replacement for the archived FastSAM → CLIP
+pipeline and determine whether zero-shot object detection provides a more
+reliable foundation for later segmentation using SAM 2.
+
+### Evaluation Setup
+
+Model:
+
+- `IDEA-Research/grounding-dino-tiny`
+
+Prompt:
+
+- `"tree . utility pole ."`
+
+Evaluation images:
+
+- Representative real electric-pole images containing vegetation.
+
+### Findings
+
+**Utility pole detection — reliable.**
+
+Grounding DINO consistently detects the main utility pole with a single,
+well-localized bounding box across tested images.
+
+**Tree detection — reliable.**
+
+Unlike FastSAM, Grounding DINO detects sparse tree canopies as a single object
+instead of fragmenting them into multiple disconnected regions. This makes it
+better suited for vegetation localization.
+
+**Bounding box quality.**
+
+Bounding boxes intentionally include contextual pixels surrounding the object.
+This is expected behaviour because Grounding DINO is an object detector rather
+than a segmentation model.
+
+**Inference speed.**
+
+CPU inference is suitable for development and testing. GPU acceleration can be
+used later without architectural changes.
+
+### Engineering Decisions
+
+- Grounding DINO becomes the primary object detection model.
+- FastSAM is retained as the archived Phase 2 baseline for comparison.
+- CLIP is permanently removed from the planned pipeline.
+- SAM 2 will be responsible for converting Grounding DINO bounding boxes into
+  accurate object masks.
+
+### Remaining Research
+
+- Compare `grounding-dino-tiny` with `grounding-dino-base`.
+- Evaluate additional prompt variations:
+  - `"tree . utility pole ."`
+  - `"tree . electric pole ."`
+  - `"vegetation . utility pole ."`
+  - `"tree . power pole ."`
+- Measure detection consistency across different lighting conditions,
+  vegetation densities, camera distances, and pole configurations.
+- Determine the optimal confidence thresholds for tree and utility pole
+  detection.
+- Evaluate SAM 2 mask quality using Grounding DINO detections as prompts.
+
+### References
+
+- Grounding DINO paper (Liu et al., 2023).
+- Hugging Face model: `IDEA-Research/grounding-dino-tiny`.
+- Phase 3A implementation: `src/vegetation_analysis/grounding/`.
+- Demo script: `scripts/run_grounding_demo.py`.
+
+## 2026-07-01 - FastSAM Evaluation and Architecture Decision: Grounding DINO
+
+### Date
+
+2026-07-01
+
+### Research Topic
+
+FastSAM pipeline evaluation and Phase 3 architecture selection.
+
+### Objective
+
+Record the findings from evaluating the Phase 2 FastSAM segmentation pipeline
+on real electric-pole images, and document the resulting architecture decision
+for Phase 3.
+
+### Evaluation Findings
+
+FastSAM was evaluated on multiple real images of electric poles with nearby
+vegetation. The following patterns were consistently observed:
+
+**Utility pole segmentation — reliable.**
+In every tested image, the pole body was isolated as a distinct object with a
+clean bounding box and well-formed mask geometry. The FastSAM-s model handles
+rigid, high-contrast vertical structures well.
+
+**Tree canopy segmentation — unreliable.**
+Sparse and semi-open tree canopies were consistently fragmented into multiple
+small disconnected masks. In the worst cases, large sections of foliage were
+not detected at all. Dense closed-canopy trees produced better results but were
+still split at branch boundaries.
+
+**Root cause.**
+FastSAM is a class-agnostic segmentation model trained to produce instance
+masks for all visible objects. It does not understand semantic categories.
+When a tree canopy is visually non-contiguous (sparse branches, sky gaps),
+FastSAM segments individual contiguous regions rather than producing a single
+unified tree object. CLIP classification applied to individual sub-masks would
+receive partial canopy fragments rather than a representative tree region,
+making confidence scores unreliable.
+
+### Architecture Decision
+
+**CLIP classification is removed from the Phase 3 plan.**
+
+The FastSAM → CLIP pipeline was designed under the assumption that FastSAM
+would reliably produce one contiguous mask per tree. Evaluation shows this
+assumption does not hold for sparse vegetation.
+
+**Grounding DINO replaces CLIP as the Phase 3 detection approach.**
+
+Grounding DINO is an open-set object detection model that produces labelled
+axis-aligned bounding boxes directly from text prompts. It does not depend on
+segmentation masks as input.
+
+Advantages for this project:
+
+- Produces a single bounding box per detected object regardless of canopy
+  fragmentation. A sparse tree canopy is covered by one box, not split into
+  many.
+- Text prompts (`"tree . utility pole ."`) map naturally to the project's
+  detection needs.
+- Well-established Hugging Face integration with accessible pre-trained
+  checkpoints (`IDEA-Research/grounding-dino-tiny`,
+  `IDEA-Research/grounding-dino-base`).
+- Bounding boxes from Grounding DINO are the standard input format for SAM 2,
+  which is the planned mask generation model for a later phase.
+
+**FastSAM segmentation is retained as the archived Phase 2 baseline.**
+No code is deleted. The `src/vegetation_analysis/segmentation/` package remains
+intact for reference, benchmarking, and potential future use.
+
+**The updated pipeline is:**
+
+```
+Image
+  → Grounding DINO
+  → Tree & Utility Pole Bounding Boxes
+  → SAM 2 (future phase)
+  → Tree/Pole Masks
+  → Depth Anything V2
+  → Distance Estimation
+  → API Response
+```
+
+### Pending Research Directions
+
+- Compare Grounding DINO Tiny and Base checkpoints on a larger validation dataset.
+- Refine prompt engineering for improved tree detection.
+- Evaluate SAM 2 mask quality using Grounding DINO detections.
+- Research edge extraction for future distance estimation.
+
+### References
+
+- Phase 2 implementation: `src/vegetation_analysis/segmentation/`.
+- Phase 3 scaffold: `src/vegetation_analysis/grounding/`.
+- Grounding DINO paper: Liu et al., 2023 — "Grounding DINO: Marrying DINO with
+  Grounded Pre-Training for Open-Set Object Detection."
+- Hugging Face model hub: `IDEA-Research/grounding-dino-tiny`,
+  `IDEA-Research/grounding-dino-base`.
+
 ## 2026-06-26 - Initial Architecture Baseline
 
 ### Date
@@ -151,6 +335,10 @@ questions before Phase 3 design begins.
 No final segmentation strategy has been selected. Phase 3 design will not
 begin until the segmentation quality has been evaluated on a representative
 dataset and the development team has reviewed the results.
+
+Note: The subsequent evaluation (recorded in the 2026-07-01 entry above)
+confirmed that the FastSAM → CLIP approach is unsuitable and led to the
+architecture decision to adopt Grounding DINO.
 
 ### References
 

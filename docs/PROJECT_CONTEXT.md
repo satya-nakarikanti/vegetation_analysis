@@ -24,9 +24,14 @@ The complete pipeline is planned as:
 
 Image
 ↓
-FastSAM
+Grounding DINO (Completed)
 ↓
-CLIP Classification
+DetectionResult
+↓
+SAM 2 (Planned)
+↓
+TreeMask
+PoleMask
 ↓
 Tree Species Classification
 ↓
@@ -39,6 +44,13 @@ Results
 Main Pole Inspection Project
 
 This repository currently develops only the vegetation analysis module.
+
+Note: The original pipeline used FastSAM → CLIP. After evaluating FastSAM on
+real electric-pole images, sparse tree canopies were found to fragment into
+multiple disconnected masks, making the FastSAM → CLIP approach unsuitable.
+FastSAM is retained as the archived Phase 2 baseline. Grounding DINO was
+selected as the Phase 3 replacement because it produces a single labelled
+bounding box per detected object regardless of canopy fragmentation.
 
 ---
 
@@ -94,24 +106,61 @@ Completed
 
 ---
 
-## Phase 3
+## Phase 3A
 
-CLIP
+Grounding DINO
 
 Responsibilities:
 
-Classify each segmented object.
+* Detect trees using natural-language prompts.
+* Detect utility poles using natural-language prompts.
+* Produce structured bounding boxes.
+* Produce confidence scores.
+* Provide bounding-box prompts for SAM 2.
 
-Current target labels:
+Output:
 
-* Tree
-* Pole
-
-The objective is to identify which segmented objects should continue through the vegetation pipeline.
+DetectionResult
 
 Status:
 
-Planned
+Completed.
+
+Implementation:
+
+* Hugging Face Grounding DINO integration.
+* Automatic CPU/CUDA device selection.
+* Prompt builder.
+* Detection visualization.
+* Demo runner.
+* Automated tests.
+
+Evaluation:
+
+Validated successfully on representative electric-pole images.
+
+---
+
+## Phase 3B
+
+SAM 2
+
+Responsibilities:
+
+* Generate segmentation masks using Grounding DINO bounding boxes.
+* Produce one mask per detected object.
+* Improve boundary accuracy over bounding boxes.
+* Generate masks suitable for later distance estimation.
+
+Output:
+
+TreeMask
+
+PoleMask
+
+Status:
+
+Planned.
 
 ---
 
@@ -304,45 +353,38 @@ The objective is long-term maintainability rather than rapid prototyping.
 
 # Data Flow
 
-Current:
+Active pipeline (Phase 3A):
 
 Image
 
 ↓
 
-FastSAM
+Grounding DINO
 
 ↓
 
-SegmentedObject
-
-Future:
-
-SegmentedObject
+DetectionResult
 
 ↓
 
-CLIP
+Phase 3B
 
 ↓
 
-Tree Objects
+SAM 2
 
 ↓
 
-Species Classifier
+TreeMask
+PoleMask
 
 ↓
 
-Tree Species
+Species Classification
 
 ↓
 
 Depth Anything
-
-↓
-
-Relative Depth
 
 ↓
 
@@ -351,7 +393,6 @@ Distance Engine
 ↓
 
 Final Result
-
 ---
 
 # Current API Goal
@@ -396,23 +437,29 @@ Production code should never depend directly on demonstration scripts.
 
 Current Phase:
 
-Phase 2 completed.
+Phase 3A completed.
+
+Grounding DINO is now the active object detection pipeline.
+
+Completed:
 
 Completed:
 
 * Environment setup
 * Project foundation
-* FastSAM integration
+* Documentation system
+* FastSAM integration (archived Phase 2 baseline)
 * Segmentation pipeline
-* Structured segmentation objects
-* Visualization
+* Grounding DINO architecture migration
+* Grounding DINO implementation
 * Automated testing
+* Real-image validation
 
 Upcoming:
 
-Phase 3
+Phase 3B
 
-CLIP integration for Tree/Pole classification.
+SAM 2 mask generation using Grounding DINO detections.
 
 ---
 

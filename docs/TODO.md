@@ -4,34 +4,28 @@ This file tracks actionable work. It should evolve throughout development and
 stay synchronized with `PROJECT_STATUS.md`, `CHANGELOG.md`, and
 `RESEARCH_LOG.md`.
 
+
 ## Immediate Tasks
 
-- Present Phase 2 results and documentation to the user for review.
-- Wait for explicit user approval before starting Phase 3 design.
+- Review Grounding DINO performance on a larger validation dataset.
+- Evaluate multiple prompt strategies for vegetation detection.
+- Begin Phase 3B: SAM 2 integration.
 
-## Current Sprint — Segmentation Evaluation
+## Current Sprint — Phase 3B: SAM 2 Integration
 
-- Collect a representative set of real electric pole images covering varied
-  lighting conditions, canopy densities, and pole configurations.
-- Run the Phase 2 pipeline against the validation dataset.
-- Record segmentation quality observations for poles and trees separately.
-- Evaluate whether a single unified tree mask is reliably produced, or
-  whether masks are consistently fragmented.
-- Determine whether the current FastSAM approach is sufficient for Phase 3
-  input, or whether an alternative strategy is needed.
+- Integrate SAM 2 with Grounding DINO bounding boxes.
+- Generate tree and utility pole masks.
+- Compare SAM 2 masks against the archived FastSAM baseline.
+- Measure segmentation quality on representative images.
+- Validate mask quality before beginning species classification.
+- Record evaluation findings in `RESEARCH_LOG.md`.
 
-## Phase 3 Pre-work
+## Phase 3B Design Decisions
 
-- Research CLIP prompt engineering for tree and pole mask identification.
-- Investigate mask merging strategies for fragmented tree canopy masks.
-- Define a minimum acceptable segmentation quality threshold for Phase 3
-  input before CLIP integration begins.
-- Evaluate whether a detector-assisted segmentation approach would produce
-  more reliable tree masks than the current any-object strategy.
-- Research alternative segmentation models that may handle sparse vegetation
-  with greater consistency.
-- Design the CLIP integration module after segmentation evaluation is
-  complete.
+- Select the preferred SAM 2 checkpoint.
+- Define acceptable mask quality thresholds.
+- Determine the mask refinement strategy for overlapping vegetation.
+- Decide whether post-processing is required after SAM 2 inference.
 
 ## Future Improvements
 
@@ -43,14 +37,11 @@ stay synchronized with `PROJECT_STATUS.md`, `CHANGELOG.md`, and
 
 ## Research TODOs
 
-- Evaluate segmentation consistency across a wider variety of images
-  including different seasons, lighting, and canopy types.
-- Compare segmentation quality across multiple approaches before committing
-  to Phase 3.
-- Research edge extraction approaches for future distance estimation between
-  segmented tree and pole objects.
-- Research depth estimation limitations for distance approximation.
-- Research tree mask merging strategies to unify fragmented canopy detections.
+- Compare Grounding DINO Tiny vs. Base checkpoints.
+- Evaluate prompt engineering for vegetation detection.
+- Research SAM 2 mask quality using Grounding DINO detections.
+- Research edge extraction for future distance estimation.
+- Evaluate Depth Anything V2 for engineering-grade distance estimation.
 
 ## Completed
 
@@ -69,6 +60,27 @@ stay synchronized with `PROJECT_STATUS.md`, `CHANGELOG.md`, and
 - ✅ Update all documentation to reflect Phase 2 completion.
 - ✅ Confirm Python environment and virtual environment setup.
 - ✅ Decide model weight strategy (model file placed in project root).
+- ✅ Evaluate FastSAM on real electric-pole images and record findings.
+- ✅ Record architecture decision: Grounding DINO replaces CLIP as Phase 3.
+- ✅ Archive FastSAM segmentation as the completed Phase 2 baseline.
+- ✅ Create `src/vegetation_analysis/grounding/` package skeleton.
+- ✅ Implement `schemas.py` (`DetectionBox`, `DetectionResult`).
+- ✅ Implement `grounding_dino_loader.py` (config, loader, loaded-model stubs).
+- ✅ Implement `detector.py` (detector skeleton).
+- ✅ Implement `prompts.py` (`PromptBuilder`, prompt constants).
+- ✅ Implement `visualization.py` (`DetectionVisualizer`).
+- ✅ Update all documentation to reflect architecture change.
+- ✅ Implement Grounding DINO model loader.
+- ✅ Implement Grounding DINO inference pipeline.
+- ✅ Implement prompt builder and shared constants.
+- ✅ Implement structured detection schemas.
+- ✅ Implement detection visualization.
+- ✅ Implement `scripts/run_grounding_demo.py`.
+- ✅ Add Grounding DINO dependencies (`torch`, `transformers`).
+- ✅ Write automated Grounding DINO unit tests.
+- ✅ Validate Grounding DINO on representative electric-pole images.
+- ✅ Achieve 27 passing automated tests.
+- ✅ Complete Phase 3A Grounding DINO integration.
 
 ## Nice to Have
 

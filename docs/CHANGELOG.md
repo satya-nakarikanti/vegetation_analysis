@@ -4,6 +4,95 @@ This file records meaningful project changes. Every future phase or meaningful
 task should use the same structure so progress, decisions, and verification stay
 traceable.
 
+## 2026-07-02 - Phase 3A Grounding DINO Integration
+
+### Date
+
+2026-07-02
+
+### Phase
+
+Phase 3A: Grounding DINO Detection.
+
+### Status
+
+Completed.
+
+### Files Changed
+
+- `src/vegetation_analysis/grounding/constants.py`
+- `src/vegetation_analysis/grounding/__init__.py`
+- `src/vegetation_analysis/grounding/grounding_dino_loader.py`
+- `src/vegetation_analysis/grounding/detector.py`
+- `src/vegetation_analysis/grounding/schemas.py`
+- `src/vegetation_analysis/grounding/prompts.py`
+- `src/vegetation_analysis/grounding/visualization.py`
+- `scripts/run_grounding_demo.py`
+- `tests/test_grounding_loader.py`
+- `tests/test_grounding_detector.py`
+- `tests/test_grounding_prompts_and_visualization.py`
+- `tests/test_segmentation_pipeline.py`
+- `pyproject.toml`
+- `README.md`
+- `docs/PROJECT_STATUS.md`
+- `docs/CHANGELOG.md`
+- `docs/RESEARCH_LOG.md`
+- `docs/TODO.md`
+- `docs/PROJECT_CONTEXT.md`
+
+### Summary
+
+Completed the production Grounding DINO integration.
+
+The repository now contains a fully working open-set object detection pipeline
+capable of detecting trees and utility poles using natural-language prompts.
+Grounding DINO replaces the originally planned FastSAM → CLIP architecture.
+
+FastSAM remains archived as the completed Phase 2 baseline for comparison and
+future benchmarking.
+
+### Implemented
+
+- Grounding DINO model loader.
+- Hugging Face model loading.
+- Automatic CPU/CUDA device selection.
+- Prompt builder.
+- Shared constants module.
+- Detection pipeline.
+- Structured `DetectionBox` and `DetectionResult` schemas.
+- Detection visualization.
+- Grounding DINO demo runner.
+- Automated unit tests.
+- Compatibility with multiple Transformers API versions (`threshold` and
+  `box_threshold`, `text_labels` and `labels`).
+
+### Validation
+
+- 27 automated tests pass.
+- Ruff linting passes.
+- mypy passes.
+- Grounding DINO successfully detects trees and utility poles on real images.
+- Demo runner validated successfully.
+
+### Architectural Decisions
+
+- Grounding DINO is now the active object detector.
+- FastSAM is retained as the archived Phase 2 baseline.
+- SAM 2 will consume Grounding DINO bounding boxes during Phase 3B.
+- Compatibility logic is included to support multiple Transformers releases.
+
+### Observations
+
+- Utility pole detection is reliable.
+- Tree detection is significantly more reliable than the previous FastSAM
+  segmentation approach.
+- Detection quality depends on prompt wording and confidence thresholds.
+- Bounding boxes are intentionally coarse and will later be refined by SAM 2.
+
+### Next Phase
+
+Phase 3B: SAM 2 mask generation.
+
 ## 2026-06-26 - Phase 2 Completion and Validation
 
 ### Date
@@ -95,8 +184,10 @@ state.
 
 ### Next Phase
 
-Phase 3: CLIP integration for tree and pole classification. Pending
-segmentation evaluation and explicit user approval.
+Phase 3: Grounding DINO detection for tree and pole bounding boxes. Pending
+explicit user approval. (Note: CLIP integration was the originally planned
+Phase 3 approach. After FastSAM evaluation, Grounding DINO was selected as
+the replacement strategy.)
 
 ## 2026-06-26 - Phase 2 Demo Script
 
@@ -157,7 +248,7 @@ the production codebase.
 
 ### Next Phase
 
-Phase 3: CLIP integration for tree and pole classification, pending
+Phase 3: Grounding DINO detection for tree and pole bounding boxes, pending
 explicit user approval.
 
 ## 2026-06-26 - Documentation System Improvements

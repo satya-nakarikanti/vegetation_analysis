@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 import numpy as np
 import pytest
@@ -107,8 +108,8 @@ def test_small_and_large_images_are_supported(
     assert objects[0].bbox.as_xyxy() == box
 
 
-def test_invalid_image_path_is_rejected(tmp_path: Path) -> None:
-    invalid_image = tmp_path / "invalid.txt"
+def test_invalid_image_path_is_rejected() -> None:
+    invalid_image = _test_output_dir() / "invalid.txt"
     invalid_image.write_text("not an image", encoding="utf-8")
 
     segmenter = FastSAMSegmenter(
@@ -130,11 +131,11 @@ def test_empty_image_array_is_rejected() -> None:
         segmenter.segment(np.array([], dtype=np.uint8))
 
 
-def test_visualization_overlay_is_saved(tmp_path: Path) -> None:
+def test_visualization_overlay_is_saved() -> None:
     image = _multiple_object_image()
     masks = _masks_for_objects(_height_width(image), boxes=[(5, 5, 30, 40)])
     objects = extract_segmented_objects([FakeResult(masks=FakeMasks(data=masks))])
-    output_path = tmp_path / "segmentation_overlay.png"
+    output_path = _test_output_dir() / "segmentation_overlay.png"
 
     saved_path = MaskVisualizer().save_overlay(
         image=image,
@@ -210,3 +211,9 @@ def _masks_for_objects(
 
 def _height_width(image: NDArray[np.uint8]) -> tuple[int, int]:
     return int(image.shape[0]), int(image.shape[1])
+
+
+def _test_output_dir() -> Path:
+    path = Path("outputs") / "test_tmp" / f"segmentation_pipeline_{uuid4().hex}"
+    path.mkdir(parents=True, exist_ok=False)
+    return path
