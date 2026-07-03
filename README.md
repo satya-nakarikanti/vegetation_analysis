@@ -479,7 +479,8 @@ Depth Anything V2
 
 ### Phase 3A
 <img width="1342" height="548" alt="image" src="https://github.com/user-attachments/assets/8ff3d664-680d-4ff5-a5c4-17bc69daa388" />
-<img width="1342" height="548" alt="image" src="https://github.com/user-attachments/assets/0cdbbd62-9577-4c38-ab8b-b581bf61a7c8" />
+<img width="1080" height="1440" alt="grounding_dino_annotated" src="https://github.com/user-attachments/assets/10566071-2335-4013-9283-583f8c6f13dc" />
+
 
 ### Phase 3B
 <img width="1408" height="786" alt="image" src="https://github.com/user-attachments/assets/457f42de-cd8b-4ef8-9ba0-886d3d7586da" />
