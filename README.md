@@ -378,7 +378,7 @@ pytest
 
 ```powershell
 ruff check .
-mypy
+mypy src
 ```
 
 ### Phase 2 Segmentation Demo
