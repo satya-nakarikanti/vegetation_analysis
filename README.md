@@ -360,6 +360,101 @@ first execution and cached locally.
 
 No manual download is required.
 
+## SAM 2 Setup
+
+### Install SAM 2
+
+This project uses **Meta Segment Anything Model 2.1 (SAM 2.1)** for instance segmentation.
+
+Install the package:
+
+```bash
+pip install sam2
+```
+
+Or install all project dependencies:
+
+```bash
+pip install -e .
+```
+
+---
+### Download the Model Checkpoint
+
+Download the official **SAM 2.1 Tiny** checkpoint directly from Meta:
+
+**Direct Download**
+
+https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_tiny.pt
+
+Or refer to the official SAM 2 repository for all available checkpoints:
+
+https://github.com/facebookresearch/sam2
+
+After downloading, place the checkpoint in the following directory:
+
+```text
+vegetation_analysis
+└──checkpoints/
+   └── sam2.1_hiera_tiny.pt
+```
+
+> **Note:** Model checkpoints are intentionally excluded from Git and must be downloaded separately.
+
+### Current Model Configuration
+
+| Component | Configuration |
+|-----------|---------------|
+| Grounding DINO | `IDEA-Research/grounding-dino-tiny` |
+| SAM Version | **SAM 2.1** |
+| SAM Config | `configs/sam2.1/sam2.1_hiera_t.yaml` |
+| SAM Checkpoint | `checkpoints/sam2.1_hiera_tiny.pt` |
+| Python | 3.12 |
+| PyTorch | 2.12.1 (CPU) |
+
+---
+
+### Verify the Installation
+
+Run the complete segmentation pipeline:
+
+```bash
+python scripts/run_sam2_demo.py
+```
+
+A successful execution should:
+
+- Load the Grounding DINO model.
+- Load the SAM 2.1 checkpoint.
+- Detect utility poles and nearby vegetation.
+- Remove duplicate pole detections.
+- Generate high-quality segmentation masks.
+- Save the following outputs:
+
+```text
+outputs/demo/
+├── sam2_annotated.png
+└── sam2_statistics.json
+```
+
+The current production pipeline is:
+
+```text
+Image
+    │
+    ▼
+Grounding DINO
+    │
+    ▼
+Duplicate Pole Filtering
+    │
+    ▼
+SAM 2.1
+    │
+    ▼
+Segmentation Masks
+```
+
 ## Running the Project
 
 ### Environment Verification
