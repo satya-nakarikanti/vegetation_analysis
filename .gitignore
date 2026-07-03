@@ -40,3 +40,6 @@ data/processed/
 Thumbs.db
 .idea/
 .vscode/
+
+# SAM 2 checkpoints
+checkpoints/*.pt

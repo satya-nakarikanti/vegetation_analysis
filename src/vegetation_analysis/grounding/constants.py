@@ -75,7 +75,7 @@ VEGETATION_LABELS: tuple[str, ...] = (LABEL_TREE, LABEL_POLE)
 
 #: Default Grounding DINO text prompt for detecting trees and utility poles.
 #: Grounding DINO expects labels separated by " . " and terminated with " .".
-DEFAULT_VEGETATION_PROMPT: str = "tree . utility pole ."
+DEFAULT_VEGETATION_PROMPT: str = "tree nearest to the pole . utility pole ."
 
 #: Alternative prompt that uses "electric pole" instead of "utility pole".
 #: May improve recall on images where the pole type differs from utility poles.

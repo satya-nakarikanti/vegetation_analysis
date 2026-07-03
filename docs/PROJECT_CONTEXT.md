@@ -26,9 +26,11 @@ Image
 ↓
 Grounding DINO (Completed)
 ↓
+Duplicate Pole Filtering (Completed)
+↓
 DetectionResult
 ↓
-SAM 2 (Planned)
+SAM 2 (Completed)
 ↓
 TreeMask
 PoleMask
@@ -160,7 +162,7 @@ PoleMask
 
 Status:
 
-Planned.
+Completed.
 
 ---
 
@@ -363,11 +365,15 @@ Grounding DINO
 
 ↓
 
+Duplicate Pole Filtering (Completed)
+
+↓
+
 DetectionResult
 
 ↓
 
-Phase 3B
+Phase 3B (Completed)
 
 ↓
 
@@ -437,9 +443,9 @@ Production code should never depend directly on demonstration scripts.
 
 Current Phase:
 
-Phase 3A completed.
+Phase 3B completed.
 
-Grounding DINO is now the active object detection pipeline.
+Grounding DINO + SAM 2 is now the active object detection and segmentation pipeline.
 
 Completed:
 
@@ -452,14 +458,16 @@ Completed:
 * Segmentation pipeline
 * Grounding DINO architecture migration
 * Grounding DINO implementation
+* SAM 2 integration
+* Duplicate pole filtering
 * Automated testing
 * Real-image validation
 
 Upcoming:
 
-Phase 3B
+Phase 5
 
-SAM 2 mask generation using Grounding DINO detections.
+Metric depth estimation using Depth Anything V2.
 
 ---
 

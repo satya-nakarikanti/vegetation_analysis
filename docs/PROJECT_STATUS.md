@@ -5,13 +5,11 @@ updated whenever a meaningful task is completed.
 
 ## Current Phase
 
-Phase 3A: Grounding DINO Detection.
+Phase 5: Metric Depth Estimation (Depth Anything V2).
 
-Status: ✅ Completed and verified.
+Status: Planned.
 
-Grounding DINO is now the active object detection pipeline. The implementation
-has been validated using automated tests and real electric-pole images.
-Phase 3B (SAM 2 integration) is the next planned milestone.
+Phase 3B.2 (SAM 2 Mask Evaluation) is complete and the end-to-end segmentation pipeline is validated. The next stage is depth estimation.
 
 ## Overall Progress
 
@@ -25,9 +23,9 @@ Phase 3B (SAM 2 integration) is the next planned milestone.
 - Phase 3A Grounding DINO implementation is complete.
 - Grounding DINO successfully detects trees and utility poles using
   natural-language prompts.
-- Automated testing, linting, type checking, and real-image validation have
-  been completed successfully.
-- Phase 3B (SAM 2 mask generation) is the next development stage.
+- Phase 3B (SAM 2 mask generation) is complete. The pipeline: Image → Grounding DINO → Duplicate Pole Filtering → SAM 2 → Segmentation Masks.
+- The end-to-end segmentation pipeline is validated on real images. FastSAM is officially retired.
+- Phase 5 (Depth Anything V2) is the next development stage.
 
 ## Completed Phases
 
@@ -151,30 +149,62 @@ Verification:
 - ruff check .: passed.
 - mypy: passed.
 - Grounding DINO demo executed successfully.
-- Real-image inference verified.
+---
+
+### Phase 3B.1: SAM 2 Foundation & Infrastructure
+
+Status: ✅ Completed.
+
+Completed work:
+
+- Meta SAM 2 dependency added.
+- SAM 2 loader and configuration.
+- SAM 2 segmenter consuming Grounding DINO boxes.
+- `MaskObject` and `SegmentationResult` schemas.
+- Mask visualization and contour generation.
+- Demo script `run_sam2_demo.py`.
+- Automated tests passing.
+
+Verification:
+
+- pytest: 10 tests passed.
+- ruff check .: passed.
+- mypy: passed.
+- Demo script handles missing weights correctly.
+---
+
+### Phase 3B.2: SAM 2 Integration and Validation
+
+Status: ✅ Completed.
+
+Completed work:
+
+- SAM 2 mask generation validated against real images.
+- Duplicate pole filtering implemented.
+- End-to-end segmentation pipeline finalized.
+- FastSAM officially retired in favor of Grounding DINO + SAM 2.
+
+Verification:
+
+- pytest, ruff, and mypy passed.
+- SAM 2 demo outputs verified.
+
 ---
 
 ## Current Tasks
 
-- Evaluate multiple Grounding DINO prompt strategies.
-- Compare Grounding DINO Tiny and Base checkpoints.
-- Begin Phase 3B (SAM 2 integration).
-- Validate Grounding DINO on a larger representative image dataset.
+- Begin Phase 5 (Depth Anything V2 integration).
 ---
 
 ## Pending Tasks
 
-- Integrate SAM 2 mask generation.
-- Evaluate mask quality against the archived FastSAM baseline.
-- Tune Grounding DINO confidence thresholds.
-- Select the best prompt for vegetation detection.
+- Integrate Depth Anything V2 for metric depth estimation.
 - Build a representative evaluation dataset.
 
 ---
 
 ## Future Phases
 
-- Phase 3B: SAM 2 mask generation.
 - Phase 4: Tree species classification.
 - Phase 5: Metric depth estimation using Depth Anything V2.
 - Phase 6: Distance estimation engine.
@@ -190,18 +220,19 @@ Completed:
 
 - Phase 1
 - Phase 2
-- Phase 3A
+- Phase 3B.1
+- Phase 3B.2
 
 Current development:
 
-Phase 3B — SAM 2 integration.
+Phase 5 — Depth Anything V2 integration.
 ---
 
 ## Known Issues
 
 - Grounding DINO produces coarse bounding boxes by design.
 - Detection quality depends on prompt wording and confidence thresholds.
-- Mask generation has not yet been implemented.
+- Metric depth estimation has not yet been implemented.
 
 ---
 
@@ -235,7 +266,6 @@ Phase 3B — SAM 2 integration.
 
 ## Notes
 
-- Phase 3A is complete.
-- Phase 3B (SAM 2) requires explicit approval before implementation.
+- Phase 3A and 3B is complete.
 - Keep CHANGELOG.md, PROJECT_STATUS.md, TODO.md, and RESEARCH_LOG.md synchronized.
-- Retain FastSAM as the archived Phase 2 baseline until SAM 2 is fully validated.
+

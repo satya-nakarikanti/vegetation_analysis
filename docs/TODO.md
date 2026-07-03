@@ -7,25 +7,20 @@ stay synchronized with `PROJECT_STATUS.md`, `CHANGELOG.md`, and
 
 ## Immediate Tasks
 
-- Review Grounding DINO performance on a larger validation dataset.
-- Evaluate multiple prompt strategies for vegetation detection.
-- Begin Phase 3B: SAM 2 integration.
+- Begin Phase 5: Depth Anything V2 integration.
+- Evaluate Depth Anything V2 for metric depth estimation on real images.
 
-## Current Sprint — Phase 3B: SAM 2 Integration
+## Current Sprint — Phase 5: Depth Anything V2 Integration
 
-- Integrate SAM 2 with Grounding DINO bounding boxes.
-- Generate tree and utility pole masks.
-- Compare SAM 2 masks against the archived FastSAM baseline.
-- Measure segmentation quality on representative images.
-- Validate mask quality before beginning species classification.
+- Integrate Depth Anything V2.
+- Generate depth maps for pole and tree regions.
+- Calibrate relative depth into approximate metric distance estimates.
 - Record evaluation findings in `RESEARCH_LOG.md`.
 
-## Phase 3B Design Decisions
+## Phase 5 Design Decisions
 
-- Select the preferred SAM 2 checkpoint.
-- Define acceptable mask quality thresholds.
-- Determine the mask refinement strategy for overlapping vegetation.
-- Decide whether post-processing is required after SAM 2 inference.
+- Determine how to map depth values to physical distances.
+- Define what regions (edge or center) of the masks should be used for depth sampling.
 
 ## Future Improvements
 
@@ -39,7 +34,6 @@ stay synchronized with `PROJECT_STATUS.md`, `CHANGELOG.md`, and
 
 - Compare Grounding DINO Tiny vs. Base checkpoints.
 - Evaluate prompt engineering for vegetation detection.
-- Research SAM 2 mask quality using Grounding DINO detections.
 - Research edge extraction for future distance estimation.
 - Evaluate Depth Anything V2 for engineering-grade distance estimation.
 
@@ -81,6 +75,11 @@ stay synchronized with `PROJECT_STATUS.md`, `CHANGELOG.md`, and
 - ✅ Validate Grounding DINO on representative electric-pole images.
 - ✅ Achieve 27 passing automated tests.
 - ✅ Complete Phase 3A Grounding DINO integration.
+- ✅ Complete Phase 3B.1 SAM 2 Foundation.
+- ✅ Implement duplicate pole filtering.
+- ✅ Complete Phase 3B.2 SAM 2 mask generation and evaluation.
+- ✅ Finalize end-to-end segmentation pipeline (Grounding DINO + SAM 2).
+- ✅ Retire FastSAM.
 
 ## Nice to Have
 

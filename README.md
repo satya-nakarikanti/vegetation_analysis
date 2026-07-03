@@ -19,8 +19,8 @@ Grounding DINO replaces the originally planned FastSAM → CLIP pipeline after
 evaluation showed that FastSAM fragmented sparse tree canopies into multiple
 disconnected masks.
 
-Future phases will use SAM 2 for mask generation, followed by species
-classification, depth estimation, distance estimation, and API integration.
+Future phases will use Depth Anything V2 for metric depth estimation, followed by species
+classification, distance estimation, and API integration.
 
 ## Objectives
 
@@ -138,6 +138,13 @@ Phase 3A
 
 Grounding DINO is now the active object detection pipeline.
 
+Phase 3B.2
+
+• SAM 2 mask generation evaluated and validated
+• Duplicate pole filtering implemented
+• End-to-end segmentation pipeline finalized
+• FastSAM officially retired
+
 FastSAM remains in the repository as the archived Phase 2 baseline for
 reference and benchmarking.
 
@@ -145,9 +152,6 @@ reference and benchmarking.
 
 Current limitations:
 
-- Grounding DINO currently produces bounding boxes only.
-- Object masks are not yet generated.
-- SAM 2 integration has not started.
 - Tree species classification has not started.
 - Depth estimation has not started.
 - Distance estimation has not started.
@@ -164,19 +168,16 @@ Uploaded Image
 Grounding DINO  ← IMPLEMENTED (Phase 3A)
       |
       v
-Tree / Pole Bounding Boxes
+Tree / Pole Bounding Boxes (Duplicate poles filtered)
       |
       v
-SAM 2 Mask Generation  ← Phase 3B
+SAM 2 Mask Generation  ← IMPLEMENTED (Phase 3B.1)
       |
       v
 Tree & Pole Masks
       |
       v
-EfficientNetV2 Species Classification
-      |
-      v
-Depth Anything V2
+Depth Anything V2 (Phase 5)
       |
       v
 Distance Engine
@@ -288,20 +289,29 @@ Evaluation:
 Grounding DINO successfully detects both utility poles and trees using
 natural-language prompts and produces structured DetectionResult objects.
 
+### Phase 3B: SAM 2 Integration
+
+Status: ✅ Completed.
+
+Completed work:
+
+- SAM 2 mask generation infrastructure (Phase 3B.1).
+- Duplicate pole filtering (Phase 3B.2).
+- Mask evaluation and validation (Phase 3B.2).
+- Finalized end-to-end pipeline: Image → Grounding DINO → Duplicate Pole Filtering → SAM 2 → Masks.
+
 FastSAM remains archived as the Phase 2 baseline.
 
 ## Upcoming Phase
 
-### Phase 3B: SAM 2 Integration
+### Phase 5: Depth Anything V2
 
 Status: Planned.
 
 Planned work:
 
-- Generate masks from Grounding DINO bounding boxes.
-- Produce TreeMask and PoleMask objects.
-- Compare SAM 2 performance with archived FastSAM masks.
-- Record evaluation results.
+- Integrate Depth Anything V2.
+- Generate metric depth maps for pole and tree regions.
 
 ## Installation
 
@@ -447,18 +457,19 @@ Completed
 
 ✓ Phase 3A Grounding DINO
 
+✓ Phase 3B.1 SAM 2 Foundation
+✓ Phase 3B.2 SAM 2 Mask Evaluation
+
 Current Development
 
-Phase 3B
+Phase 5
 
-SAM 2 Integration
+Depth Anything V2
 
 ## Future Scope
 
-- SAM 2 integration using Grounding DINO detections.
-- SAM 2 mask generation from Grounding DINO bounding boxes.
+- Metric depth estimation using Depth Anything V2.
 - Tree species classification.
-- Metric depth estimation.
 - Distance calculation between visible pole and tree edges.
 - API response format for main application integration.
 - Integration tests with representative electric pole images.

@@ -195,7 +195,7 @@ class GroundingDINODetector:
         input_ids = _extract_input_ids(inputs)
 
         # try:
-            
+
         #     processed = postprocess(
         #         outputs,
         #         input_ids=input_ids,
@@ -209,18 +209,17 @@ class GroundingDINODetector:
 
         try:
             postprocess = (
-            self._loaded_model.processor
-            .post_process_grounded_object_detection
-        )
+                self._loaded_model.processor.post_process_grounded_object_detection
+            )
 
             try:
                 processed = postprocess(
-                outputs,
-                input_ids=input_ids,
-                threshold=self._box_threshold,
-                text_threshold=self._text_threshold,
-                target_sizes=[(image_height, image_width)],
-            )
+                    outputs,
+                    input_ids=input_ids,
+                    threshold=self._box_threshold,
+                    text_threshold=self._text_threshold,
+                    target_sizes=[(image_height, image_width)],
+                )
             except TypeError:
                 processed = postprocess(
                     outputs,
@@ -276,8 +275,92 @@ class GroundingDINODetector:
                     confidence=confidence,
                 )
             )
+        before = len(detection_boxes)
+        detection_boxes = self._filter_duplicate_poles(detection_boxes)
+
+        logger.info(
+            "Filtered %d duplicate pole detection(s).",
+            before - len(detection_boxes),
+        )
 
         return tuple(detection_boxes)
+
+    def _filter_duplicate_poles(
+        self,
+        detections: list[DetectionBox],
+    ) -> list[DetectionBox]:
+        """Remove duplicate pole detections while keeping the larger box."""
+
+        def area(box: DetectionBox) -> float:
+            return max(0.0, box.x_max - box.x_min) * max(0.0, box.y_max - box.y_min)
+
+        def intersection(box1: DetectionBox, box2: DetectionBox) -> float:
+            x1 = max(box1.x_min, box2.x_min)
+            y1 = max(box1.y_min, box2.y_min)
+            x2 = min(box1.x_max, box2.x_max)
+            y2 = min(box1.y_max, box2.y_max)
+
+            if x2 <= x1 or y2 <= y1:
+                return 0.0
+
+            return (x2 - x1) * (y2 - y1)
+
+        def iou(box1: DetectionBox, box2: DetectionBox) -> float:
+            inter = intersection(box1, box2)
+            union = area(box1) + area(box2) - inter
+
+            if union <= 0:
+                return 0.0
+
+            return inter / union
+
+        def containment(box1: DetectionBox, box2: DetectionBox) -> float:
+            inter = intersection(box1, box2)
+            smaller = min(area(box1), area(box2))
+
+            if smaller <= 0:
+                return 0.0
+
+            return inter / smaller
+
+        poles = []
+        others = []
+
+        for det in detections:
+            label = det.label.lower()
+
+            if "pole" in label:
+                poles.append(det)
+            else:
+                others.append(det)
+
+        keep = [True] * len(poles)
+
+        for i in range(len(poles)):
+            if not keep[i]:
+                continue
+
+            for j in range(i + 1, len(poles)):
+                if not keep[j]:
+                    continue
+
+                duplicate = (
+                    iou(poles[i], poles[j]) > 0.70
+                    or containment(poles[i], poles[j]) > 0.90
+                )
+
+                if not duplicate:
+                    continue
+
+                if area(poles[i]) >= area(poles[j]):
+                    keep[j] = False
+                else:
+                    keep[i] = False
+                    break
+
+        filtered_poles = [pole for pole, use in zip(poles, keep, strict=True) if use]
+
+        return others + filtered_poles
 
 
 def _validate_threshold(name: str, value: float) -> None:

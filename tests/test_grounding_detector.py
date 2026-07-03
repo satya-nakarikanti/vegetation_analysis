@@ -95,8 +95,8 @@ class FakeProcessor:
                 "threshold": threshold,
                 "text_threshold": text_threshold,
                 "target_sizes": target_sizes,
-        }   
-    )   
+            }
+        )
 
         return [
             {
@@ -104,8 +104,10 @@ class FakeProcessor:
                 "scores": [0.91, 0.12],
                 "labels": ["tree", "utility pole"],
                 "text_labels": ["tree", "utility pole"],
-         }
-        ]  
+            }
+        ]
+
+
 class FakeModel:
     def __init__(self) -> None:
         self.calls: list[dict[str, Any]] = []

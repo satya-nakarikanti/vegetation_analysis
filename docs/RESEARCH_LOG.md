@@ -4,6 +4,32 @@ This file is the engineering notebook for AI research, technical findings,
 architecture decisions, experiments, comparisons, rejected approaches, and open
 research questions. It should not contain implementation code.
 
+## 2026-07-03 - SAM 2 Mask Generation and Duplicate Pole Filtering
+
+### Date
+
+2026-07-03
+
+### Research Topic
+
+Phase 3B.2: SAM 2 Evaluation, Duplicate Pole Filtering, and FastSAM Retirement.
+
+### Objective
+
+Evaluate the end-to-end segmentation pipeline (Grounding DINO + SAM 2) on real images, implement duplicate pole filtering to refine detections, and officially retire FastSAM.
+
+### Findings
+
+- **Duplicate Pole Filtering**: Implementing duplicate filtering successfully removes overlapping bounding boxes for poles, leading to cleaner inputs for SAM 2.
+- **SAM 2 Segmentation**: SAM 2 efficiently produces accurate masks based on Grounding DINO's coarse bounding boxes. It handles both pole structures and tree canopies much better than FastSAM.
+- **End-to-End Pipeline**: The combined pipeline successfully isolates utility poles and vegetation in complex backgrounds without the fragmentation issues seen in FastSAM.
+- **Filter**: Prompt engineering alone could not reliably suppress duplicate pole detections. A lightweight post-processing filter based on overlap/containment heuristics proved significantly more robust while preserving the modular architecture.
+
+### Engineering Decisions
+
+- FastSAM is officially retired in favor of the Grounding DINO + SAM 2 pipeline.
+- The next development focus (Phase 5) will be on metric depth estimation using Depth Anything V2.
+
 ## 2026-07-02 - Grounding DINO Evaluation and Phase 3A Completion
 
 ### Date
@@ -12,7 +38,13 @@ research questions. It should not contain implementation code.
 
 ### Research Topic
 
-Grounding DINO evaluation for vegetation analysis.
+## Phase 3B.1: SAM 2 Foundation Architecture
+
+- **Decision:** SAM 2 segmenter uses Grounding DINO `DetectionResult` natively.
+- **Reason:** It decouples object detection completely from SAM 2 mask generation.
+- **Implementation:** `sam2` Meta package is used over Hugging Face for optimal compatibility with the official checkpoints.
+
+## Phase 3A: Grounding DINO vs. FastSAM
 
 ### Objective
 

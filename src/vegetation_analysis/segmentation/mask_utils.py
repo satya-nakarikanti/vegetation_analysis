@@ -120,10 +120,7 @@ def mask_to_largest_contour(mask: MaskArray) -> Contour:
 
     largest_contour = max(contours, key=cv2.contourArea)
     contour_points = cast(NDArray[np.integer[Any]], largest_contour.reshape(-1, 2))
-    return [
-        (int(point[0]), int(point[1]))
-        for point in contour_points
-    ]
+    return [(int(point[0]), int(point[1])) for point in contour_points]
 
 
 def _as_result_items(raw_results: Any) -> list[Any]:

@@ -64,8 +64,7 @@ def main() -> int:
     print()
     if missing:
         print(
-            "FAIL: Install missing dependencies with: "
-            "pip install -r requirements.txt"
+            "FAIL: Install missing dependencies with: pip install -r requirements.txt"
         )
         return 1
 

@@ -4,6 +4,102 @@ This file records meaningful project changes. Every future phase or meaningful
 task should use the same structure so progress, decisions, and verification stay
 traceable.
 
+## 2026-07-03 - Phase 3B.2 SAM 2 Integration and Validation
+
+### Date
+
+2026-07-03
+
+### Phase
+
+Phase 3B.2: SAM 2 Integration and Validation.
+
+### Status
+
+Completed.
+
+### Summary
+
+Phase 3B.2 is functionally complete. The pipeline is finalized as:
+Image → Grounding DINO → Duplicate Pole Filtering → SAM 2 → Segmentation Masks.
+
+The end-to-end segmentation pipeline has been validated successfully on real images. FastSAM is officially retired in favor of the Grounding DINO + SAM 2 pipeline.
+
+### Validation
+
+- Automated tests pass (`pytest`).
+- Linting and static analysis pass (`ruff`, `mypy`).
+- Duplicate pole filtering verified.
+- SAM 2 demo output verified.
+
+### Next Phase
+
+Next Phase: Depth Anything V2 integration for monocular depth estimation.(Phase for tree classification will be handled subsequently or in parallel).
+
+## 2026-07-03 - Phase 3B.1 SAM 2 Foundation & Infrastructure
+
+### Date
+
+2026-07-03
+
+### Phase
+
+Phase 3B.1: SAM 2 Foundation & Infrastructure.
+
+### Status
+
+Completed.
+
+### Files Changed
+
+- `src/vegetation_analysis/sam2/constants.py` — new
+- `src/vegetation_analysis/sam2/__init__.py` — new
+- `src/vegetation_analysis/sam2/sam2_loader.py` — new
+- `src/vegetation_analysis/sam2/segmenter.py` — new
+- `src/vegetation_analysis/sam2/schemas.py` — new
+- `src/vegetation_analysis/sam2/visualization.py` — new
+- `scripts/run_sam2_demo.py` — new
+- `tests/test_sam2_loader.py` — new
+- `tests/test_sam2_segmenter.py` — new
+- `tests/test_sam2_visualization.py` — new
+- `pyproject.toml`
+- `README.md`
+- `docs/PROJECT_STATUS.md`
+- `docs/CHANGELOG.md`
+- `docs/TODO.md`
+
+### Summary
+
+Completed the foundation and infrastructure for SAM 2 integration. 
+
+Implemented the loader, segmenter, schemas, and visualization module for SAM 2, mirroring the existing Grounding DINO architecture. Added a demo script that successfully chains Grounding DINO detection results into SAM 2 segmentation masks.
+
+### Implemented
+
+- SAM 2 model loader using Meta's official API (`sam2`).
+- Segmenter capable of consuming Grounding DINO bounding boxes and generating boolean masks.
+- Structured `MaskObject` and `SegmentationResult` schemas.
+- Mask visualization overlaying masks and bounding boxes on the original image.
+- Added SAM 2 dependency to `pyproject.toml`.
+- SAM 2 demo runner.
+- Automated unit tests with a mock predictor.
+
+### Validation
+
+- 10 automated tests pass.
+- Ruff linting passes.
+- mypy static typing passes.
+- Demo runner tested to catch missing dependencies gracefully.
+
+### Architectural Decisions
+
+- Use Meta's official `sam2` repository directly rather than an Ultralytics or Hugging Face wrapper.
+- `SAM2Segmenter` is purely responsible for converting `DetectionResult` boxes into SAM 2 masks; it performs no object detection itself.
+
+### Next Phase
+
+Phase 3B.2: SAM 2 mask generation and evaluation against the FastSAM baseline.
+
 ## 2026-07-02 - Phase 3A Grounding DINO Integration
 
 ### Date
