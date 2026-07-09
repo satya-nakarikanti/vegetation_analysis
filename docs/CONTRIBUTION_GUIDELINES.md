@@ -111,7 +111,7 @@ should all remain separate whenever practical.
 
 Follow:
 
-* Python 3.11+
+* Python 3.10+
 * PEP8
 * Type Hints
 * Docstrings
@@ -324,28 +324,20 @@ Avoid:
 
 # 19. Git Workflow
 
-Development should follow a feature-branch workflow.
+Development should follow a feature-branch workflow whenever multiple
+contributors are actively working on separate features.
 
-Never commit directly to the main branch.
+For independent experimental development, work may temporarily occur on the
+main branch before being merged into a stable project milestone.
 
-Recommended branch naming:
+Before merging any feature:
 
-feature/<feature-name>
+* verify all automated tests pass
+* update project documentation
+* review architectural consistency
+* create a meaningful commit message
 
-Examples:
-
-feature/fastsam
-
-feature/clip
-
-feature/species-classifier
-
-feature/depth-distance
-
-Every feature should be developed independently.
-
-Merge only after testing and review.
-
+Large features should remain isolated until fully validated.
 ---
 
 # 20. Commit Messages
@@ -421,10 +413,16 @@ A phase is considered complete only after:
 
 □ Code reviewed
 
+□ Full validation completed
+   (pytest, Ruff, mypy, demo execution)
+
+□ Documentation synchronized
+
 □ Commit created
 
 □ Repository pushed
 
+□ Demo outputs verified
 ---
 
 # 23. Final Principle

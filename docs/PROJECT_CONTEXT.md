@@ -22,28 +22,45 @@ The long-term objective is to automatically assist utility inspections by identi
 
 The complete pipeline is planned as:
 
-Image
-↓
-Grounding DINO (Completed)
-↓
-Duplicate Pole Filtering (Completed)
-↓
-DetectionResult
-↓
-SAM 2 (Completed)
-↓
-TreeMask
-PoleMask
-↓
-Tree Species Classification
-↓
-Depth Anything V2
-↓
-Distance Estimation
-↓
-Results
-↓
+RGB Image
+        │
+        ├──────────────────────────────┐
+        │                              │
+        ▼                              ▼
+Grounding DINO (Completed)      Depth Anything V2 (Completed)
+        │                              │
+Duplicate Pole Filtering              Relative Depth Map
+(Completed)                            │
+        │                              │
+        ▼                              │
+SAM 2 Segmentation (Completed)         │
+        │                              │
+Segmentation Masks ────────────────────┘
+        │
+        ▼
+Depth Sampling Engine (Completed)
+        │
+        ▼
+Relative Geometry Engine (Completed)
+        │
+        ▼
+Camera-Relative Object Coordinates
+        │
+        ▼
+Tree Species Classification (In Progress)
+        │
+        ▼
+Nearest Point Extraction
+        │
+        ▼
+Metric Distance Estimation
+        │
+        ▼
+Vegetation Clearance Estimation
+        │
+        ▼
 Main Pole Inspection Project
+
 
 This repository currently develops only the vegetation analysis module.
 
@@ -194,70 +211,103 @@ Planned
 
 ---
 
-## Phase 5
-
-Depth Estimation
-
-Model:
+## Phase 5.1
 
 Depth Anything V2
 
+Model:
+
+Depth Anything V2 Small
+
 Responsibilities:
 
-Generate a monocular relative depth map for the entire image.
+* Generate a dense relative depth map.
+* Preserve original image resolution.
+* Produce grayscale and colorized depth visualizations.
+* Export raw depth arrays.
 
 Output:
 
 Relative depth map.
 
-Important:
-
-Depth Anything does **not** provide metric distance directly.
-
-Additional algorithms are required for metric estimation.
-
 Status:
 
-Planned
+Completed.
 
 ---
 
-## Phase 6
+## Phase 5.2
 
-Distance Estimation
+Depth Sampling Engine
 
-Goal:
+Responsibilities:
 
-Estimate the approximate distance between:
+* Combine SAM 2 segmentation masks with the dense depth map.
+* Compute robust object-wise depth statistics.
+* Generate representative depth values for every detected object.
 
-Nearest visible tree edge
+Output:
 
-↓
+Object-wise depth statistics.
 
-Nearest visible pole edge
+Includes:
 
-The nearest pole edge may belong to:
-
-* Pole body
-* Pole component
-* Conductor
-* Wire
-
-depending on visibility.
-
-Current target accuracy:
-
-Approximate engineering estimate.
-
-Example:
-
-3.5 m ± 0.3 m
-
-Exact survey-grade measurements are not required.
+* median depth
+* mean depth
+* minimum depth
+* maximum depth
+* standard deviation
 
 Status:
 
-Research ongoing.
+Completed.
+
+---
+
+## Phase 5.3
+
+Relative Geometry Engine
+
+Responsibilities:
+
+* Convert object image coordinates into normalized camera-relative coordinates.
+* Combine centroid location with sampled object depth.
+* Produce relative 3D object coordinates.
+
+Output:
+
+Camera-relative object coordinates.
+
+Includes:
+
+* relative_x
+* relative_y
+* relative_z
+
+Status:
+
+Completed.
+
+---
+## Phase 6
+
+Metric Distance Estimation
+
+Goal:
+
+Convert the relative camera-coordinate representation into an engineering-scale distance estimate.
+
+Future work includes:
+
+* Camera calibration
+* Pole reference frame
+* Nearest-point extraction
+* Metric scaling
+* Vegetation clearance estimation
+
+Status:
+
+Planned.
 
 ---
 
@@ -277,11 +327,7 @@ Inference
 
 ↓
 
-Result Adapters
-
-↓
-
-Project Schemas
+Structured Schemas
 
 ↓
 
@@ -289,7 +335,11 @@ Visualization
 
 ↓
 
-Future AI Modules
+Geometry
+
+↓
+
+Future Distance Engine
 
 Each layer has a single responsibility.
 
@@ -301,7 +351,16 @@ src/
 
 Production source code.
 
-Never place demo code here.
+Current modules:
+
+* grounding/
+* sam2/
+* depth/
+* depth_sampling/
+* geometry/
+* segmentation/ (Phase 2 archived baseline)
+
+Each module is independently testable and loosely coupled.
 
 scripts/
 
@@ -355,50 +414,29 @@ The objective is long-term maintainability rather than rapid prototyping.
 
 # Data Flow
 
-Active pipeline (Phase 3A):
+Current production pipeline:
 
-Image
+RGB Image
 
-↓
+        │
+        ├──────────────────────────────┐
+        │                              │
+        ▼                              ▼
+Grounding DINO                  Depth Anything V2
+        │                              │
+Duplicate Pole Filtering              │
+        │                              │
+        ▼                              ▼
+SAM 2 Segmentation            Relative Depth Map
+        │                              │
+        └──────────────┬───────────────┘
+                       ▼
+              Depth Sampling Engine
+                       ▼
+             Relative Geometry Engine
+                       ▼
+        Camera-Relative Object Coordinates
 
-Grounding DINO
-
-↓
-
-Duplicate Pole Filtering (Completed)
-
-↓
-
-DetectionResult
-
-↓
-
-Phase 3B (Completed)
-
-↓
-
-SAM 2
-
-↓
-
-TreeMask
-PoleMask
-
-↓
-
-Species Classification
-
-↓
-
-Depth Anything
-
-↓
-
-Distance Engine
-
-↓
-
-Final Result
 ---
 
 # Current API Goal
@@ -414,11 +452,17 @@ Image
 Output:
 
 {
-"tree_detected": true,
-"species": "Neem",
-"species_confidence": 0.96,
-"distance_to_pole": 3.4,
-"distance_confidence": 0.88
+  "tree_detected": true,
+  "species": null,
+  "species_confidence": null,
+
+  "relative_coordinates": {
+    "rx": -0.782,
+    "ry": 0.430,
+    "rz": 0.357
+  },
+
+  "distance_to_pole": null
 }
 
 The implementation details should remain hidden behind the API.
@@ -443,38 +487,48 @@ Production code should never depend directly on demonstration scripts.
 
 Current Phase:
 
-Phase 3B completed.
-
-Grounding DINO + SAM 2 is now the active object detection and segmentation pipeline.
-
-Completed:
+Phase 5.3 completed.
 
 Completed:
 
 * Environment setup
-* Project foundation
 * Documentation system
-* FastSAM integration (archived Phase 2 baseline)
-* Segmentation pipeline
-* Grounding DINO architecture migration
-* Grounding DINO implementation
-* SAM 2 integration
+* FastSAM baseline (archived)
+* Grounding DINO integration
 * Duplicate pole filtering
+* SAM 2 segmentation
+* Depth Anything V2 integration
+* Depth Sampling Engine
+* Relative Geometry Engine
+* CUDA acceleration
 * Automated testing
 * Real-image validation
 
 Upcoming:
 
-Phase 5
+Phase 4
 
-Metric depth estimation using Depth Anything V2.
+Tree Species Classification
+
+followed by
+
+Phase 6
+
+Metric Distance Estimation
+
+Nearest-point geometry
+
+Vegetation clearance estimation
 
 ---
 
 # Long-Term Goal
 
-Create a scalable vegetation analysis module that integrates seamlessly into the existing electric pole inspection platform.
+The long-term objective is to build a production-ready vegetation analysis
+module capable of estimating the real-world clearance between vegetation and
+utility infrastructure from a single RGB image.
 
-Every phase should strengthen the architecture so future models can be integrated with minimal code changes.
-
-The project should remain maintainable, testable, and production-ready throughout development.
+The architecture is intentionally modular so that future improvements, including
+species classification, nearest-point extraction, metric calibration, and
+distance estimation, can be integrated with minimal changes to the existing
+pipeline.

@@ -7,38 +7,60 @@ stay synchronized with `PROJECT_STATUS.md`, `CHANGELOG.md`, and
 
 ## Immediate Tasks
 
-- Begin Phase 5: Depth Anything V2 integration.
-- Evaluate Depth Anything V2 for metric depth estimation on real images.
+- Merge the Tree Species Classification module (Phase 4).
+- Integrate species predictions into the geometry pipeline.
+- Validate species predictions on representative utility-pole images.
 
-## Current Sprint — Phase 5: Depth Anything V2 Integration
+## Current Sprint — Phase 4: Tree Species Classification
 
-- Integrate Depth Anything V2.
-- Generate depth maps for pole and tree regions.
-- Calibrate relative depth into approximate metric distance estimates.
-- Record evaluation findings in `RESEARCH_LOG.md`.
+- Complete the Tree Species Classification module.
+- Validate species predictions.
+- Integrate species metadata into geometry outputs.
+- Update documentation after successful integration.
 
-## Phase 5 Design Decisions
+## Phase 6 Design Decisions
 
-- Determine how to map depth values to physical distances.
-- Define what regions (edge or center) of the masks should be used for depth sampling.
+- Define the nearest point between tree and utility pole masks.
+- Select the engineering reference point on the utility pole.
+- Design the camera calibration strategy.
+- Convert relative geometry into metric coordinates.
 
 ## Future Improvements
 
-- Add continuous integration checks after the project structure stabilizes.
-- Add sample data organization and a validation dataset registry.
-- Add API documentation when the API layer is introduced.
-- Add model configuration documentation when additional AI dependencies are
-  introduced.
+- Execute Grounding DINO/SAM 2 and Depth Anything V2 in parallel after the
+  perception pipeline is finalized.
+- Add continuous integration after repository stabilization.
+- Add benchmark datasets.
+- Add API documentation.
+- Add model configuration documentation.
+- Benchmark CPU vs CUDA inference.
 
 ## Research TODOs
 
-- Compare Grounding DINO Tiny vs. Base checkpoints.
-- Evaluate prompt engineering for vegetation detection.
-- Research edge extraction for future distance estimation.
-- Evaluate Depth Anything V2 for engineering-grade distance estimation.
+- Compare Grounding DINO Tiny vs Base.
+- Improve vegetation prompt engineering.
+- Research camera calibration strategies.
+- Research relative-to-metric depth conversion.
+- Research nearest-point extraction algorithms.
+- Evaluate engineering distance estimation methods.
 
 ## Completed
 
+- ✅ Complete Phase 5.1: Depth Anything V2 integration.
+- ✅ Implement Depth Anything V2 loader.
+- ✅ Implement relative depth estimation.
+- ✅ Generate grayscale and Inferno depth visualizations.
+- ✅ Export raw depth maps and statistics.
+- ✅ Complete Phase 5.2: Depth Sampling Engine.
+- ✅ Implement mask-based depth sampling.
+- ✅ Compute median, mean, minimum, maximum, and standard deviation depth.
+- ✅ Implement object-wise depth visualization.
+- ✅ Complete Phase 5.3: Relative Geometry Engine.
+- ✅ Generate camera-relative `(rx, ry, rz)` coordinates.
+- ✅ Implement geometry visualization.
+- ✅ Generate grayscale depth outputs.
+- ✅ Validate CUDA execution.
+- ✅ Pass pytest, Ruff, and mypy validation.
 - ✅ Review the documentation system.
 - ✅ Research FastSAM installation options and repository/package choice.
 - ✅ Research FastSAM output format and mask visualization workflow.
@@ -83,7 +105,9 @@ stay synchronized with `PROJECT_STATUS.md`, `CHANGELOG.md`, and
 
 ## Nice to Have
 
-- Add architecture decision records if decisions become too large for
-  `RESEARCH_LOG.md`.
-- Add a documentation index if the number of docs grows.
-- Add diagrams for each major pipeline stage as the architecture matures.
+- Parallel pipeline orchestration after all functionality is complete.
+- Repository cleanup before final submission.
+- Pipeline performance benchmarking.
+- Architecture diagrams for every major pipeline stage.
+- Documentation index.
+- Engineering benchmark dataset.

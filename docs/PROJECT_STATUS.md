@@ -5,11 +5,17 @@ updated whenever a meaningful task is completed.
 
 ## Current Phase
 
-Phase 5: Metric Depth Estimation (Depth Anything V2).
+Phase 5: Relative Scene Geometry
 
-Status: Planned.
+Status: Phase 5.1, Phase 5.2, and Phase 5.3 are completed.
 
-Phase 3B.2 (SAM 2 Mask Evaluation) is complete and the end-to-end segmentation pipeline is validated. The next stage is depth estimation.
+The perception pipeline now combines Grounding DINO, SAM 2, Depth Anything V2,
+Depth Sampling, and the Relative Geometry Engine to generate normalized
+camera-relative `(rx, ry, rz)` coordinates for every detected object.
+
+Current parallel development:
+
+- Phase 4: Tree Species Classification
 
 ## Overall Progress
 
@@ -25,7 +31,11 @@ Phase 3B.2 (SAM 2 Mask Evaluation) is complete and the end-to-end segmentation p
   natural-language prompts.
 - Phase 3B (SAM 2 mask generation) is complete. The pipeline: Image → Grounding DINO → Duplicate Pole Filtering → SAM 2 → Segmentation Masks.
 - The end-to-end segmentation pipeline is validated on real images. FastSAM is officially retired.
-- Phase 5 (Depth Anything V2) is the next development stage.
+- Phase 5.1 (Depth Anything V2 integration) is complete.
+- Phase 5.2 (Depth Sampling Engine) is complete.
+- Phase 5.3 (Relative Geometry Engine) is complete.
+- The pipeline now produces normalized camera-relative object coordinates.
+- Grayscale and colorized depth visualizations are available.
 
 ## Completed Phases
 
@@ -191,48 +201,146 @@ Verification:
 
 ---
 
+### Phase 5.1: Depth Anything V2 Integration
+
+Status: ✅ Completed.
+
+Completed work:
+
+- Depth Anything V2 loader and configuration.
+- Depth Estimator.
+- Output schemas (`DepthMapResult`).
+- Depth visualization heatmap overlay.
+- Demo script (`scripts/run_depth_demo.py`).
+- Automated tests passing.
+
+---
+
+### Phase 5.2: Depth Sampling Engine
+
+Status: ✅ Completed.
+
+Completed work:
+
+- `DepthSampler` module to extract depth metrics using SAM 2 masks and Depth Anything V2 maps.
+- Morphological erosion of masks to prevent edge bleeding.
+- Computation of `centroid_x`, `centroid_y`, and comprehensive depth statistics (median, mean, std, min, max, pixel count).
+- Metadata extraction in the JSON response.
+- Visualization module to overlay centroids and statistics on depth heatmaps.
+- Complete demo orchestration script (`scripts/run_depth_sampling_demo.py`).
+- Automated tests passing.
+
+### Phase 5.3: Relative Geometry Engine
+
+Status: ✅ Completed.
+
+Completed work:
+
+- Relative Geometry module.
+- Camera-relative coordinate computation.
+- Relative Geometry Engine.
+- Geometry visualization.
+- Grayscale depth visualization.
+- Geometry demo (`scripts/run_geometry_demo.py`).
+- Geometry schemas.
+- Automated tests.
+
+Outputs:
+
+Each detected object now contains:
+
+- relative_x
+- relative_y
+- relative_z
+
+along with its sampled depth statistics.
+
+Verification:
+
+- pytest: passed.
+- ruff check: passed.
+- ruff format --check: passed.
+- mypy: passed.
+- Geometry demo validated successfully on CUDA.
+
+---
+
 ## Current Tasks
 
-- Begin Phase 5 (Depth Anything V2 integration).
+- Integrate Tree Species Classification (Phase 4).
+- Merge species metadata into the geometry pipeline.
+- Begin research for metric distance estimation.
+
 ---
 
 ## Pending Tasks
 
-- Integrate Depth Anything V2 for metric depth estimation.
+- Merge Tree Species Classification into the main pipeline.
 - Build a representative evaluation dataset.
-
+- Implement nearest-point extraction.
+- Design metric calibration strategy.
+- Implement engineering distance estimation.
 ---
 
 ## Future Phases
 
-- Phase 4: Tree species classification.
-- Phase 5: Metric depth estimation using Depth Anything V2.
-- Phase 6: Distance estimation engine.
-- API integration.
+- Phase 4: Tree Species Classification.
+- Phase 6: Metric Distance Estimation.
+- Production API integration.
+- Pipeline parallelization and optimization.
 - Production hardening.
+
 ---
 
 ## Repository Status
-
-Stable development baseline.
 
 Completed:
 
 - Phase 1
 - Phase 2
+- Phase 3A
 - Phase 3B.1
 - Phase 3B.2
+- Phase 5.1
+- Phase 5.2
+- Phase 5.3
 
 Current development:
 
-Phase 5 — Depth Anything V2 integration.
+Phase 4 (Tree Species Classification) is under parallel development.
+
+The current production pipeline is:
+
+Grounding DINO
+↓
+
+Duplicate Pole Filtering
+↓
+
+SAM 2
+
++
+
+Depth Anything V2
+
+↓
+
+Depth Sampling
+
+↓
+
+Relative Geometry
+
 ---
 
 ## Known Issues
 
 - Grounding DINO produces coarse bounding boxes by design.
 - Detection quality depends on prompt wording and confidence thresholds.
-- Metric depth estimation has not yet been implemented.
+- Depth Anything V2 provides relative depth only.
+- Relative Geometry currently uses object centroids.
+- Nearest-point extraction has not yet been implemented.
+- Metric calibration remains future work.
 
 ---
 
@@ -240,8 +348,9 @@ Phase 5 — Depth Anything V2 integration.
 
 - SAM 2 integration quality depends on Grounding DINO bounding-box accuracy.
 - Prompt engineering may significantly affect detection consistency.
-- Metric distance estimation remains dependent on reliable depth estimation.
-
+- Metric distance estimation depends on accurate camera calibration.
+- Nearest-point extraction will influence engineering accuracy.
+- Species classification accuracy depends on available training data.
 ---
 
 ## Technical Debt
@@ -256,16 +365,19 @@ Phase 5 — Depth Anything V2 integration.
 
 ## Research Topics
 
-- Grounding DINO Tiny vs Base comparison.
-- Prompt engineering for vegetation detection.
-- SAM 2 integration.
-- Tree species classification.
-- Depth Anything V2 calibration.
-- Distance estimation strategy.
+- Tree Species Classification.
+- Camera calibration.
+- Relative-to-metric depth conversion.
+- Nearest-point extraction.
+- Vegetation clearance estimation.
+- Real-world engineering validation.
+
 ---
 
 ## Notes
 
-- Phase 3A and 3B is complete.
+- Phase 5.1, 5.2, and 5.3 are complete.
+- The perception pipeline is functionally complete.
+- Future work focuses on semantic understanding (species classification) and engineering measurement (metric distance estimation).
 - Keep CHANGELOG.md, PROJECT_STATUS.md, TODO.md, and RESEARCH_LOG.md synchronized.
 

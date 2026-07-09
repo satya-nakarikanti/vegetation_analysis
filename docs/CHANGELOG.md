@@ -4,6 +4,207 @@ This file records meaningful project changes. Every future phase or meaningful
 task should use the same structure so progress, decisions, and verification stay
 traceable.
 
+## 2026-07-08 - Phase 5.3 Relative Geometry Engine
+
+### Date
+
+2026-07-08
+
+### Phase
+
+Phase 5.3: Relative Geometry Engine.
+
+### Status
+
+Completed.
+
+### Files Changed
+
+- `src/vegetation_analysis/geometry/constants.py` — new
+- `src/vegetation_analysis/geometry/__init__.py` — new
+- `src/vegetation_analysis/geometry/geometry_engine.py` — new
+- `src/vegetation_analysis/geometry/schemas.py` — new
+- `src/vegetation_analysis/geometry/visualization.py` — new
+- `scripts/run_geometry_demo.py` — new
+- `tests/test_geometry_engine.py` — new
+- `tests/test_geometry_visualization.py` — new
+- `src/vegetation_analysis/depth/visualization.py`
+- `README.md`
+- `docs/PROJECT_STATUS.md`
+- `docs/CHANGELOG.md`
+- `docs/PROJECT_CONTEXT.md`
+- `docs/RESEARCH_LOG.md`
+- `docs/TODO.md`
+- `demo/README.md`
+
+### Summary
+
+Completed the Relative Geometry Engine.
+
+The perception pipeline now combines Grounding DINO, SAM 2, Depth Anything V2,
+and the Depth Sampling Engine to compute camera-relative object coordinates.
+Each detected object now contains normalized `(rx, ry, rz)` coordinates derived
+from segmentation masks and relative depth estimation.
+
+Added grayscale depth visualization alongside the existing colorized depth map
+to simplify depth inspection and debugging.
+
+### Implemented
+
+- Relative Geometry module.
+- Camera-relative coordinate computation.
+- Geometry visualization.
+- Geometry demo runner.
+- Geometry schemas.
+- Future-compatible species fields (`species`, `species_confidence`).
+- Grayscale depth visualization.
+- Automated unit tests.
+
+### Validation
+
+- `pytest` passed.
+- `ruff check` passed.
+- `ruff format --check` passed.
+- `mypy` passed.
+- Geometry demo successfully validated on CUDA.
+
+### Architectural Decisions
+
+- Camera coordinate system adopted as the intermediate reference frame.
+- Camera-relative coordinates are stored instead of metric coordinates.
+- Object centroids remain the current reference point.
+- Metric calibration is intentionally deferred to a later phase.
+
+### Next Phase
+
+Phase 4: Tree Species Classification (parallel development).
+
+Following species integration, the project will continue with metric calibration,
+nearest-point extraction, and vegetation clearance estimation.
+
+
+## 2026-07-08 - Phase 5.2 Depth Sampling Engine
+
+### Date
+
+2026-07-08
+
+### Phase
+
+Phase 5.2: Depth Sampling Engine.
+
+### Status
+
+Completed.
+
+### Files Changed
+
+- `src/vegetation_analysis/depth_sampling/constants.py` — new
+- `src/vegetation_analysis/depth_sampling/__init__.py` — new
+- `src/vegetation_analysis/depth_sampling/sampler.py` — new
+- `src/vegetation_analysis/depth_sampling/schemas.py` — new
+- `src/vegetation_analysis/depth_sampling/visualization.py` — new
+- `scripts/run_depth_sampling_demo.py` — new
+- `tests/test_depth_sampler.py` — new
+- `tests/test_depth_sampling_visualization.py` — new
+
+### Summary
+
+Completed the Depth Sampling Engine.
+
+The module combines segmentation masks from SAM 2 with dense depth predictions
+from Depth Anything V2 to generate robust object-wise depth statistics.
+
+### Implemented
+
+- Depth Sampling module.
+- Mask-based depth extraction.
+- Median, mean, minimum, maximum and standard deviation depth computation.
+- Depth sampling visualization.
+- Demo runner.
+- Automated tests.
+
+### Validation
+
+- `pytest` passed.
+- `ruff` passed.
+- `mypy` passed.
+- Sampling demo validated successfully.
+
+### Architectural Decisions
+
+- Median depth selected as the representative object depth.
+- Mask-based sampling replaces single-pixel sampling.
+- Sampling remains completely independent from geometry computation.
+
+### Next Phase
+
+Phase 5.3: Relative Geometry Engine.
+
+
+## 2026-07-08 - Phase 5.1 Depth Anything V2 Integration
+
+### Date
+
+2026-07-08
+
+### Phase
+
+Phase 5.1: Depth Anything V2 Integration.
+
+### Status
+
+Completed.
+
+### Files Changed
+
+- `src/vegetation_analysis/depth/constants.py` — new
+- `src/vegetation_analysis/depth/__init__.py` — new
+- `src/vegetation_analysis/depth/depth_loader.py` — new
+- `src/vegetation_analysis/depth/estimator.py` — new
+- `src/vegetation_analysis/depth/schemas.py` — new
+- `src/vegetation_analysis/depth/visualization.py` — new
+- `scripts/run_depth_demo.py` — new
+- `tests/test_depth_loader.py` — new
+- `tests/test_depth_estimator.py` — new
+- `tests/test_depth_visualization.py` — new
+
+### Summary
+
+Integrated Depth Anything V2 as the production monocular depth estimation
+module.
+
+The depth estimation pipeline operates independently of object detection and
+segmentation, producing dense relative depth maps for every input image.
+
+### Implemented
+
+- Depth Anything V2 loader.
+- CUDA/CPU device selection.
+- Relative depth estimation.
+- Depth visualization.
+- Raw depth export.
+- Depth statistics export.
+- Demo runner.
+- Automated tests.
+
+### Validation
+
+- `pytest` passed.
+- `ruff` passed.
+- `mypy` passed.
+- CUDA inference validated successfully.
+
+### Architectural Decisions
+
+- Hugging Face Transformers implementation selected.
+- Dense depth estimation separated from segmentation.
+- Relative depth retained without metric calibration.
+
+### Next Phase
+
+Phase 5.2: Depth Sampling Engine.
+
 ## 2026-07-03 - Phase 3B.2 SAM 2 Integration and Validation
 
 ### Date

@@ -4,6 +4,127 @@ This file is the engineering notebook for AI research, technical findings,
 architecture decisions, experiments, comparisons, rejected approaches, and open
 research questions. It should not contain implementation code.
 
+## 2026-07-08 - Relative Geometry Engine and Camera Coordinate System
+
+### Date
+
+2026-07-08
+
+### Research Topic
+
+Phase 5.3: Relative Geometry Representation.
+
+### Objective
+
+Determine the most suitable intermediate coordinate representation before
+implementing real-world distance estimation.
+
+### Findings
+
+- Camera-relative coordinates provide a stable intermediate representation for
+  monocular vision.
+- Using the image centre as the origin would make later metric calibration more
+  complicated because image dimensions change with resolution and cropping.
+- Camera-relative coordinates remain compatible with future intrinsic camera
+  calibration.
+- The current implementation computes object coordinates using object centroids
+  combined with sampled relative depth values.
+- Centroid-based geometry is sufficient for validating the perception pipeline,
+  but engineering distance estimation should instead use the nearest points
+  between tree and utility pole masks.
+
+### Engineering Decisions
+
+- Adopt camera-relative coordinates `(rx, ry, rz)` as the project's internal
+  geometry representation.
+- Preserve centroid geometry for the current phase.
+- Defer nearest-point extraction until the metric distance estimation phase.
+- Keep the geometry engine independent from segmentation and depth estimation.
+
+### Remaining Research
+
+- Camera intrinsic calibration.
+- Nearest-point extraction between segmented objects.
+- Relative-to-metric coordinate conversion.
+
+
+## 2026-07-08 - Depth Sampling Evaluation
+
+### Date
+
+2026-07-08
+
+### Research Topic
+
+Phase 5.2: Object-wise Depth Sampling.
+
+### Objective
+
+Determine the most reliable method for assigning a representative depth value
+to segmented objects.
+
+### Findings
+
+- Sampling the complete segmentation mask provides significantly more stable
+  results than using a single pixel or bounding-box centre.
+- Median depth is more robust than mean depth because it is less sensitive to
+  noisy predictions near mask boundaries.
+- Combining SAM 2 masks with Depth Anything V2 produces reliable object-wise
+  depth statistics.
+- Morphological erosion further reduces boundary artefacts during sampling.
+
+### Engineering Decisions
+
+- Use mask-based sampling rather than bounding-box sampling.
+- Store median depth as the primary representative depth value.
+- Preserve additional statistics (mean, minimum, maximum, standard deviation)
+  for future analysis and debugging.
+
+### Remaining Research
+
+- Investigate confidence weighting for sampled depth values.
+- Evaluate sampling consistency across different vegetation densities.
+
+
+## 2026-07-08 - Depth Anything V2 Evaluation
+
+### Date
+
+2026-07-08
+
+### Research Topic
+
+Phase 5.1: Monocular Relative Depth Estimation.
+
+### Objective
+
+Evaluate whether Depth Anything V2 provides an appropriate depth representation
+for vegetation clearance estimation.
+
+### Findings
+
+- Depth Anything V2 produces dense relative depth maps suitable for downstream
+  geometric reasoning.
+- Relative depth is consistent across large structures such as utility poles,
+  trees, and surrounding infrastructure.
+- Colorized heatmaps are useful for presentations, while grayscale depth maps
+  provide a clearer representation for engineering inspection.
+- The model does not estimate metric depth and therefore requires a later
+  calibration stage.
+
+### Engineering Decisions
+
+- Retain both Inferno and grayscale depth visualizations.
+- Preserve the raw floating-point depth array for future metric calibration.
+- Separate depth estimation from geometry computation to maintain a modular
+  architecture.
+
+### Remaining Research
+
+- Relative-to-metric depth calibration.
+- Camera intrinsic parameter estimation.
+- Real-world validation using measured pole-to-tree distances.
+
 ## 2026-07-03 - SAM 2 Mask Generation and Duplicate Pole Filtering
 
 ### Date
@@ -195,13 +316,28 @@ intact for reference, benchmarking, and potential future use.
 
 ```
 Image
-  → Grounding DINO
-  → Tree & Utility Pole Bounding Boxes
-  → SAM 2 (future phase)
-  → Tree/Pole Masks
-  → Depth Anything V2
-  → Distance Estimation
-  → API Response
+      │
+      ├──────────────┐
+      │              │
+      ▼              ▼
+Grounding DINO   Depth Anything V2
+      │              │
+      ▼              ▼
+SAM 2        Relative Depth Map
+      │              │
+      └──────┬───────┘
+             ▼
+     Depth Sampling
+             ▼
+    Relative Geometry
+             ▼
+Tree Species Classification
+             ▼
+Nearest-Point Extraction
+             ▼
+Metric Distance Estimation
+             ▼
+API Response
 ```
 
 ### Pending Research Directions
