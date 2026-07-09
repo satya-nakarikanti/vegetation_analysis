@@ -231,22 +231,16 @@ All demo outputs are written to
 ```text
 outputs/demo/
 ```
-
-| File | Description |
-|------|-------------|
-| grounding_dino_annotated.png | Grounding DINO detections |
-| grounding_dino_statistics.json | Detection statistics |
-| sam2_annotated.png | SAM 2 segmentation |
-| sam2_statistics.json | Segmentation statistics |
-| depth_map.png | Inferno depth visualization |
-| depth_grayscale.png | Grayscale depth visualization |
-| depth.npy | Raw floating-point depth map |
-| depth_statistics.json | Depth estimation statistics |
-| depth_sampling_annotated.png | Object-wise sampled depth |
-| depth_sampling_statistics.json | Depth sampling statistics |
-| geometry_annotated.png | Relative geometry visualization |
-| geometry_statistics.json | Camera-relative object coordinates |
-
+<img width="100" height="200" alt="Screenshot 2026-07-09 123158" src="https://github.com/user-attachments/assets/d9f983cf-188c-4853-b886-dbb62c861a60" />
+<p float="left">
+  <img width="200" alt="Screenshot 2026-07-09 122724" src="https://github.com/user-attachments/assets/a54bffcb-e7a9-4fde-b99d-466d92f9890f" />
+  <img width="200" alt="Screenshot 2026-07-09 122816" src="https://github.com/user-attachments/assets/e8a30a65-23d2-4c75-9660-9c57626e5b20" />
+  <img width="200" alt="Screenshot 2026-07-09 122858" src="https://github.com/user-attachments/assets/2bd953d9-a99b-4fb8-98fb-bdcb3d55cb92" />
+</p>
+<p float="left">
+  <img width="200" alt="Screenshot 2026-07-09 122939" src="https://github.com/user-attachments/assets/5080fea1-f80f-483a-89cd-ee5a7b4078a7" />
+  <img width="200" alt="Screenshot 2026-07-09 123029" src="https://github.com/user-attachments/assets/ea5095e8-ac25-4452-8ddf-66a49aa76bc0" />
+</p>
 ---
 
 # Example Output
@@ -259,6 +253,8 @@ The current pipeline generates structured information for every detected object,
 - Relative depth
 - Object depth statistics
 - Camera-relative coordinates (rx, ry, rz)
+
+
 
 Example:
 
@@ -303,7 +299,3 @@ Detailed project documentation is available in the `docs/` directory.
 - Production Deployment
 
 ---
-
-# License
-
-This project is intended for academic research and development.
