@@ -42,8 +42,8 @@ from vegetation_analysis.depth import (
 from vegetation_analysis.depth.visualization import DepthVisualizer
 from vegetation_analysis.depth_sampling import DepthSampler
 from vegetation_analysis.geometry import (
+    GeometryEngine,
     GeometryVisualizer,
-    RelativeGeometryEngine,
 )
 from vegetation_analysis.grounding import (
     DEFAULT_VEGETATION_PROMPT,
@@ -110,6 +110,7 @@ def save_statistics(geometry_result: object, output_dir: Path) -> Path:
             "principal_x": round(geometry_result.metadata.principal_x, 2),
             "principal_y": round(geometry_result.metadata.principal_y, 2),
             "depth_model": geometry_result.metadata.depth_model,
+            "coordinate_system": geometry_result.metadata.coordinate_system.value,
         },
         "objects": [
             {
@@ -120,12 +121,36 @@ def save_statistics(geometry_result: object, output_dir: Path) -> Path:
                 "pixel_count": obj.pixel_count,
                 "centroid_x": round(obj.centroid_x, 2),
                 "centroid_y": round(obj.centroid_y, 2),
-                "relative_x": round(obj.relative_x, 6),
-                "relative_y": round(obj.relative_y, 6),
-                "relative_z": round(obj.relative_z, 6),
+                "camera_x": round(obj.camera_x, 6),
+                "camera_y": round(obj.camera_y, 6),
+                "camera_z": round(obj.camera_z, 6),
+                "camera_distance": round(obj.camera_distance, 6),
+                "relative_x": round(obj.relative_x, 6)
+                if obj.relative_x is not None
+                else None,
+                "relative_y": round(obj.relative_y, 6)
+                if obj.relative_y is not None
+                else None,
+                "relative_z": round(obj.relative_z, 6)
+                if obj.relative_z is not None
+                else None,
             }
             for obj in geometry_result.objects
         ],
+        "relationships": [
+            {
+                "object_a_label": rel.object_a_label,
+                "object_b_label": rel.object_b_label,
+                "angle_radians": round(rel.angle_radians, 6),
+                "angle_degrees": round(rel.angle_degrees, 6),
+                "dot_product": round(rel.dot_product, 6),
+                "centroid_distance_law_of_cosines": round(rel.centroid_distance_law_of_cosines, 6),
+                "centroid_distance_euclidean": round(rel.centroid_distance_euclidean, 6),
+                "distance_difference": rel.distance_difference,
+                "validation_passed": rel.validation_passed
+            }
+            for rel in geometry_result.relationships
+        ]
     }
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -142,6 +167,7 @@ def print_runtime_summary(
     sam2_time_s: float,
     depth_time_s: float,
     sampling_time_s: float,
+    projection_time_s: float,
     geometry_time_s: float,
     annotated_path: Path,
     statistics_path: Path,
@@ -153,7 +179,7 @@ def print_runtime_summary(
 
     sep = "-" * 62
     print(sep)
-    print("  Vegetation Analysis - Phase 5.3 Relative Geometry Demo")
+    print("  Vegetation Analysis - Phase 5.3 / 6.2 Geometry Demo")
     print(sep)
     print(f"  Image source    : {image_source}")
     print(
@@ -180,12 +206,16 @@ def print_runtime_summary(
     print("    Depth Sampling")
     print("      |")
     print("      v")
-    print("    Relative Geometry Engine")
+    print("    Projection Engine")
+    print("      |")
+    print("      v")
+    print("    Geometry Engine")
     print()
     print(f"  DINO time       : {dino_time_s:.3f} s")
     print(f"  SAM 2 time      : {sam2_time_s:.3f} s")
     print(f"  Depth time      : {depth_time_s:.3f} s")
     print(f"  Sampling time   : {sampling_time_s:.3f} s")
+    print(f"  Proj time       : {projection_time_s:.3f} s")
     print(f"  Geometry time   : {geometry_time_s:.3f} s")
     print(f"  Objects found   : {len(geometry_result.objects)}")
     print()
@@ -196,14 +226,47 @@ def print_runtime_summary(
             label = obj.label if obj.species is None else f"{obj.label}/{obj.species}"
             print(
                 f"    {label:<18} | "
-                f"rx={obj.relative_x:+.3f}  "
-                f"ry={obj.relative_y:+.3f}  "
-                f"rz={obj.relative_z:+.3f}"
+                f"cx={obj.camera_x:+.3f}  "
+                f"cy={obj.camera_y:+.3f}  "
+                f"cz={obj.camera_z:+.3f}  "
+                f"dist={obj.camera_distance:+.3f}"
             )
     else:
         print("  No objects detected.")
+        
+    if geometry_result.relationships:
+        print()
+        print("  Camera Relationships:")
+        
+        # Build a lookup for distances so we can print them cleanly
+        dist_lookup = {obj.label: obj.camera_distance for obj in geometry_result.objects}
+        
+        for rel in geometry_result.relationships:
+            lbl_a = rel.object_a_label
+            lbl_b = rel.object_b_label
+            
+            dist_a = dist_lookup.get(lbl_a, 0.0)
+            dist_b = dist_lookup.get(lbl_b, 0.0)
+            
+            print(f"    {lbl_a} <-> {lbl_b}")
+            print(f"    Camera->{lbl_a.capitalize()} : {dist_a:.3f} m")
+            print(f"    Camera->{lbl_b.capitalize()} : {dist_b:.3f} m")
+            print(f"    Angle        : {rel.angle_degrees:.2f}°")
+            
+        print()
+        print("  Centroid Distance Validation")
+        for rel in geometry_result.relationships:
+            lbl_a = rel.object_a_label
+            lbl_b = rel.object_b_label
+            pass_str = "PASS" if rel.validation_passed else "FAIL"
+            
+            print(f"    {lbl_a} <-> {lbl_b}")
+            print(f"    Law of Cosines : {rel.centroid_distance_law_of_cosines:.3f} m")
+            print(f"    Euclidean      : {rel.centroid_distance_euclidean:.3f} m")
+            print(f"    Difference     : {rel.distance_difference:.9f} m")
+            print(f"    Validation     : {pass_str}")
+            print()
 
-    print()
     print("  Output files:")
     print(f"    Annotated       : {annotated_path}")
     print(f"    Statistics      : {statistics_path}")
@@ -237,12 +300,22 @@ def run_demo(cli_args: list[str]) -> int:
         loaded_sam2 = SAM2Loader(config=sam2_config).load()
         segmenter = SAM2Segmenter(model=loaded_sam2)
 
-        depth_config = DepthAnythingModelConfig(device_preference="auto")
+        # Allow selecting Relative or Metric through configuration or a runtime flag
+        # For this phase, we use the Metric model.
+        from vegetation_analysis.depth.constants import METRIC_MODEL_ID
+        depth_config = DepthAnythingModelConfig(
+            model_id=METRIC_MODEL_ID, device_preference="auto"
+        )
         loaded_depth = DepthAnythingLoader(config=depth_config).load()
         depth_estimator = DepthEstimator(loaded_model=loaded_depth)
 
         sampler = DepthSampler()
-        geometry_engine = RelativeGeometryEngine()
+        
+        from vegetation_analysis.projection import ProjectionEngine
+        from vegetation_analysis.projection.schemas import CoordinateSystem
+        projection_engine = ProjectionEngine(coordinate_system=CoordinateSystem.METRIC)
+        
+        geometry_engine = GeometryEngine()
 
     except RuntimeError as exc:
         logger.error("Model loading failed: %s", exc)
@@ -288,11 +361,33 @@ def run_demo(cli_args: list[str]) -> int:
 
     t4 = time.perf_counter()
     try:
-        geometry_result = geometry_engine.compute(sampling_result=sampling_result)
+        from vegetation_analysis.projection.schemas import CameraIntrinsics
+        # For demo/testing only, use: fx = fy = 1000.0, cx = w/2, cy = h/2
+        # These are temporary demonstration values and NOT production calibration.
+        intrinsics = CameraIntrinsics(
+            fx=1000.0,
+            fy=1000.0,
+            cx=image.width / 2.0,
+            cy=image.height / 2.0,
+            image_width=image.width,
+            image_height=image.height,
+        )
+        projection_result = projection_engine.project(
+            sampling_result=sampling_result,
+            intrinsics=intrinsics,
+        )
+    except Exception as exc:
+        logger.error("Projection failed: %s", exc)
+        return 1
+    projection_time_s = time.perf_counter() - t4
+
+    t5 = time.perf_counter()
+    try:
+        geometry_result = geometry_engine.compute(projection_result=projection_result)
     except Exception as exc:
         logger.error("Geometry computation failed: %s", exc)
         return 1
-    geometry_time_s = time.perf_counter() - t4
+    geometry_time_s = time.perf_counter() - t5
 
     # ------------------------------------------------------------------ #
     # Save outputs
@@ -327,6 +422,7 @@ def run_demo(cli_args: list[str]) -> int:
         sam2_time_s=sam2_time_s,
         depth_time_s=depth_time_s,
         sampling_time_s=sampling_time_s,
+        projection_time_s=projection_time_s,
         geometry_time_s=geometry_time_s,
         annotated_path=annotated_path,
         statistics_path=statistics_path,

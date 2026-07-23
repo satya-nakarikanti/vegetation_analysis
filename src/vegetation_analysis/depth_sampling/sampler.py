@@ -142,11 +142,16 @@ class DepthSampler:
             std_depth=float(np.std(depth_values)),
             min_depth=float(np.min(depth_values)),
             max_depth=float(np.max(depth_values)),
+            bounding_box=obj.box,
+            original_mask=obj.mask,
+            sampling_mask=sampling_mask,
+            contours=obj.contours,
+            mask_area_pixels=obj.mask_area_pixels,
         )
 
     def _get_sampling_mask(self, original_mask: NDArray[Any]) -> NDArray[np.bool_]:
         """Apply morphological erosion to avoid boundary bleeding.
-        
+
         Falls back to original mask if eroded mask is too small.
         """
 

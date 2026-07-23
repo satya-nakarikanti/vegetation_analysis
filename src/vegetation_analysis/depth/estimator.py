@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, TypeAlias
+from typing import TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -38,7 +38,7 @@ class DepthEstimator:
         self._loaded_model = loaded_model
 
     def estimate(self, image: ImageInput) -> DepthMapResult:
-        """Run Depth Anything V2 estimation for the given image.
+        """Run Metric Depth Anything V2 estimation for the given image.
 
         Args:
             image: Source image as a file path, NumPy array, or PIL Image.
@@ -51,26 +51,31 @@ class DepthEstimator:
             ValueError: If the image is invalid.
             RuntimeError: If model inference or post-processing fails.
         """
+        import cv2
 
         prepared_image = self._prepare_image(image)
         image_width, image_height = prepared_image.size
 
         logger.info(
-            "Running Depth Anything V2 estimation on %dx%d image.",
+            "Running Metric Depth Anything V2 estimation on %dx%d image.",
             image_width,
             image_height,
         )
 
-        inputs = self._preprocess(prepared_image)
-        outputs = self._run_inference(inputs)
-        depth_map = self._postprocess(
-            outputs=outputs,
-            image_size=(image_width, image_height),
-        )
+        # The official infer_image method expects a BGR NumPy array (like cv2.imread).
+        # We have an RGB PIL Image, so we convert it to BGR.
+        raw_image_rgb = np.array(prepared_image)
+        raw_image_bgr = cv2.cvtColor(raw_image_rgb, cv2.COLOR_RGB2BGR)
 
-        logger.info("Depth estimation completed successfully.")
+        try:
+            depth_map = self._loaded_model.model.infer_image(raw_image_bgr)
+        except Exception as exc:
+            logger.exception("Metric Depth Anything V2 inference failed.")
+            raise RuntimeError("Metric Depth Anything V2 inference failed.") from exc
+
+        logger.info("Metric Depth estimation completed successfully.")
         return DepthMapResult(
-            depth_map=depth_map,
+            depth_map=depth_map.astype(np.float32),
             image_width=image_width,
             image_height=image_height,
             model_name=self._loaded_model.config.model_id,
@@ -118,70 +123,3 @@ class DepthEstimator:
         if array.ndim == 3 and array.shape[2] not in {1, 3, 4}:
             raise ValueError("Image array must have 1, 3, or 4 channels.")
         return Image.fromarray(array).convert("RGB")
-
-    def _preprocess(self, image: Image.Image) -> Any:
-        """Convert a PIL image into model-ready tensors."""
-
-        try:
-            inputs = self._loaded_model.processor(
-                images=image,
-                return_tensors="pt",
-            )
-            to_device = getattr(inputs, "to", None)
-            if callable(to_device):
-                inputs = to_device(self._loaded_model.device)
-        except Exception as exc:
-            logger.exception("Depth Anything V2 preprocessing failed.")
-            raise RuntimeError("Depth Anything V2 preprocessing failed.") from exc
-
-        return inputs
-
-    def _run_inference(self, inputs: Any) -> Any:
-        """Run model inference without tracking gradients."""
-
-        try:
-            import torch
-        except ImportError as exc:
-            raise RuntimeError(
-                "The 'torch' package is required for inference."
-            ) from exc
-
-        try:
-            with torch.no_grad():
-                return self._loaded_model.model(**inputs)
-        except Exception as exc:
-            logger.exception("Depth Anything V2 inference failed.")
-            raise RuntimeError("Depth Anything V2 inference failed.") from exc
-
-    def _postprocess(
-        self,
-        outputs: Any,
-        image_size: tuple[int, int],
-    ) -> NDArray[np.float32]:
-        """Convert raw model output into resized NumPy array."""
-
-        try:
-            import torch.nn.functional as F
-        except ImportError as exc:
-            raise RuntimeError(
-                "The 'torch' package is required for postprocessing."
-            ) from exc
-
-        try:
-            image_width, image_height = image_size
-            predicted_depth = outputs.predicted_depth
-
-            # Resize to original image size
-            prediction = F.interpolate(
-                predicted_depth.unsqueeze(1),
-                size=(image_height, image_width),
-                mode="bicubic",
-                align_corners=False,
-            )
-
-            depth_array = prediction.squeeze().cpu().numpy()
-            return depth_array.astype(np.float32)
-
-        except Exception as exc:
-            logger.exception("Depth Anything V2 post-processing failed.")
-            raise RuntimeError("Depth Anything V2 post-processing failed.") from exc

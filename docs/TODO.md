@@ -10,6 +10,7 @@ stay synchronized with `PROJECT_STATUS.md`, `CHANGELOG.md`, and
 - Merge the Tree Species Classification module (Phase 4).
 - Integrate species predictions into the geometry pipeline.
 - Validate species predictions on representative utility-pole images.
+- Start Phase 6 - Edge-Based Engineering Measurements.
 
 ## Current Sprint — Phase 4: Tree Species Classification
 
@@ -18,12 +19,9 @@ stay synchronized with `PROJECT_STATUS.md`, `CHANGELOG.md`, and
 - Integrate species metadata into geometry outputs.
 - Update documentation after successful integration.
 
-## Phase 6 Design Decisions
+## Next Research Direction
 
-- Define the nearest point between tree and utility pole masks.
-- Select the engineering reference point on the utility pole.
-- Design the camera calibration strategy.
-- Convert relative geometry into metric coordinates.
+Investigate Edge-Based Engineering Measurements (nearest boundary extraction from SAM2 masks) to compute minimum edge-to-edge true clearance.
 
 ## Future Improvements
 
@@ -61,6 +59,10 @@ stay synchronized with `PROJECT_STATUS.md`, `CHANGELOG.md`, and
 - ✅ Generate grayscale depth outputs.
 - ✅ Validate CUDA execution.
 - ✅ Pass pytest, Ruff, and mypy validation.
+- ✅ Complete Phase 6.3: Centroid-Based Geometry Validation.
+- ✅ Compute true camera-to-object Euclidean distance `camera_distance`.
+- ✅ Compute pairwise angle and dot product.
+- ✅ Validate centroid distances using Law of Cosines and 3D Euclidean geometry.
 - ✅ Review the documentation system.
 - ✅ Research FastSAM installation options and repository/package choice.
 - ✅ Research FastSAM output format and mask visualization workflow.

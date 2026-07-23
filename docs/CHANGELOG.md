@@ -4,6 +4,68 @@ This file records meaningful project changes. Every future phase or meaningful
 task should use the same structure so progress, decisions, and verification stay
 traceable.
 
+## 2026-07-23 - Phase 6.3 Centroid-Based Geometry Validation
+
+### Date
+
+2026-07-23
+
+### Phase
+
+Phase 6.3: Centroid-Based Geometry Validation.
+
+### Status
+
+Completed.
+
+### Summary
+
+Successfully implemented and mathematically validated the Centroid-Based Geometry computations, completing the centroid-based 3D tracking engine.
+
+The Geometry module now computes the true camera-to-object Euclidean distance `camera_distance` separate from the depth `camera_z`. It also computes pairwise angular relationships between detected objects (dot product, angles).
+
+Centroid-to-centroid true distance was computed using two independent approaches (Law of Cosines vs. 3D Euclidean distance), which validated precisely identical values within floating-point tolerance, thus verifying the mathematical integrity of the full metric projection process.
+
+### Implemented
+
+- Added `camera_distance` (Euclidean from camera) to `GeometricObject`.
+- Implemented `ObjectRelationship` schema to track object-to-object interactions.
+- Computed angle between camera-to-object vectors using dot product logic.
+- Evaluated and mathematically validated distance matching between Cosine Law and 3D Euclidean space.
+- Validated `camera_distance >= camera_z`.
+- Updated schemas, JSON structures, and demonstration output formatting.
+
+### Validation
+
+- `pytest` passed.
+- `ruff check` passed.
+- `mypy` passed.
+- All distances validated strictly equal (`diff < 1e-6`).
+
+### Next Phase
+
+Edge-Based Engineering Measurements: extracting SAM2 boundaries to find the minimum edge-to-edge true metric clearance.
+
+## 2026-07-14 - Phase 6 Apple Depth Pro Evaluation (Retired)
+
+### Date
+
+2026-07-14
+
+### Phase
+
+Phase 6: Apple Depth Pro Evaluation.
+
+### Status
+
+Completed and Retired.
+
+### Summary
+
+Removed the experimental Apple Depth Pro module.
+Retired the evaluation after completing Phase 6.
+Removed all related scripts, datasets, tests, documentation, and generated outputs.
+
 ## 2026-07-08 - Phase 5.3 Relative Geometry Engine
 
 ### Date
@@ -669,3 +731,7 @@ vision or AI functionality is implemented.
 ### Next Phase
 
 Phase 2: FastSAM integration, pending explicit user approval.
+
+### 2026-07-23
+
+Phase 6.2 completed. Metric Depth integration and repository cleanup executed. The official Depth Anything V2 Metric model from the third-party submodule replaces the Hugging Face relative depth integration. All obsolete FastSAM scripts, modules, tests, and dependencies (including ultralytics) have been permanently deleted from the repository to create a clean production codebase.

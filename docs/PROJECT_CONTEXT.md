@@ -27,9 +27,9 @@ RGB Image
         ├──────────────────────────────┐
         │                              │
         ▼                              ▼
-Grounding DINO (Completed)      Depth Anything V2 (Completed)
+Grounding DINO (Completed)      Depth Anything V2 Metric (Completed)
         │                              │
-Duplicate Pole Filtering              Relative Depth Map
+Duplicate Pole Filtering               Metric Depth Map
 (Completed)                            │
         │                              │
         ▼                              │
@@ -41,10 +41,10 @@ Segmentation Masks ────────────────────�
 Depth Sampling Engine (Completed)
         │
         ▼
-Relative Geometry Engine (Completed)
+Geometry Engine (Completed)
         │
         ▼
-Camera-Relative Object Coordinates
+Metric Camera Coordinates & Distances
         │
         ▼
 Tree Species Classification (In Progress)
@@ -98,6 +98,18 @@ Every major AI model is isolated inside its own module.
 The objective is to make every model replaceable without affecting the remaining system.
 
 Future models should integrate through clean interfaces instead of tightly coupling implementations.
+
+## Pluggable Depth Subsystem
+
+The depth module is specifically designed as a model-agnostic pluggable subsystem.
+Because downstream components (sampling, geometry, visualization) depend only on the generic `DepthMapResult` schema, swapping depth models requires changes only within the depth module itself.
+
+Future compatible models include:
+* Depth Anything V2 Relative
+* Depth Anything V2 Metric
+* ZoeDepth
+* ADALITE
+* Metric3D
 
 ---
 
@@ -244,7 +256,7 @@ Responsibilities:
 
 * Combine SAM 2 segmentation masks with the dense depth map.
 * Compute robust object-wise depth statistics.
-* Generate representative depth values for every detected object.
+* Generate an object depth estimate computed from the segmented object mask. (The median depth is used because it is robust to outliers and boundary noise.)
 
 Output:
 
@@ -266,23 +278,24 @@ Completed.
 
 ## Phase 5.3
 
-Relative Geometry Engine
+Geometry Engine
 
 Responsibilities:
 
-* Convert object image coordinates into normalized camera-relative coordinates.
+* Convert object image coordinates into metric camera-space coordinates.
 * Combine centroid location with sampled object depth.
-* Produce relative 3D object coordinates.
+* Compute camera-to-object true Euclidean distance.
+* Compute pairwise angular relationships between camera rays.
+* Perform mathematical validation of centroid distances using independent methods (Law of Cosines vs Euclidean).
 
 Output:
 
-Camera-relative object coordinates.
+Camera-space metric coordinates and inter-object relationships.
 
 Includes:
 
-* relative_x
-* relative_y
-* relative_z
+* camera_x, camera_y, camera_z, camera_distance
+* ObjectRelationship schemas (angle, dot_product, validated centroid_distance)
 
 Status:
 
@@ -308,6 +321,12 @@ Future work includes:
 Status:
 
 Planned.
+
+---
+
+# Previous Experiments
+
+Apple Depth Pro was evaluated and retired after experimental validation.
 
 ---
 
@@ -422,20 +441,31 @@ RGB Image
         ├──────────────────────────────┐
         │                              │
         ▼                              ▼
-Grounding DINO                  Depth Anything V2
+Grounding DINO                  Depth Anything V2 (Metric)
         │                              │
-Duplicate Pole Filtering              │
+Duplicate Pole Filtering               │
         │                              │
         ▼                              ▼
-SAM 2 Segmentation            Relative Depth Map
+SAM 2 Segmentation               Metric Depth Map
         │                              │
         └──────────────┬───────────────┘
                        ▼
               Depth Sampling Engine
                        ▼
-             Relative Geometry Engine
+                 Geometry Engine
                        ▼
-        Camera-Relative Object Coordinates
+      Metric Camera Coordinates & Distances
+
+---
+
+# Coordinate Systems and Projection
+
+Projection converts pixel coordinates and metric depth into 3D camera-space coordinates using the pinhole camera model.
+
+Camera Coordinate explanation:
+- `camera_x`, `camera_y` and `camera_z` together represent the object's position in camera coordinate space.
+- `camera_z` is depth along the optical axis.
+- The true Euclidean camera-to-object distance is: `sqrt(camera_x² + camera_y² + camera_z²)`
 
 ---
 
@@ -453,8 +483,8 @@ Output:
 
 {
   "tree_detected": true,
-  "species": null,
-  "species_confidence": null,
+  "species": null,             // Placeholder for future tree classification
+  "species_confidence": null,  // Placeholder, not currently used in geometry calculations
 
   "relative_coordinates": {
     "rx": -0.782,

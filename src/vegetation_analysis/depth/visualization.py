@@ -31,11 +31,16 @@ class DepthVisualizer:
     def __init__(self, colormap: int = DEFAULT_COLORMAP) -> None:
         self._colormap = colormap
 
-    def create_heatmap(self, result: DepthMapResult) -> NDArray[np.uint8]:
+    def create_heatmap(
+        self, result: DepthMapResult, invert: bool = False
+    ) -> NDArray[np.uint8]:
         """Convert a raw depth map into a colorized heatmap.
 
         Args:
             result: Depth estimation result containing the raw depth array.
+            invert: If True, inverts the normalization so larger depth values
+                become smaller normalized values (useful for metric depth to
+                match relative depth visualization).
 
         Returns:
             An ``(H, W, 3)`` uint8 NumPy array in RGB format representing the
@@ -48,7 +53,10 @@ class DepthVisualizer:
         depth_max = np.max(depth_array)
 
         if depth_max - depth_min > 1e-6:
-            normalized_depth = (depth_array - depth_min) / (depth_max - depth_min)
+            if invert:
+                normalized_depth = (depth_max - depth_array) / (depth_max - depth_min)
+            else:
+                normalized_depth = (depth_array - depth_min) / (depth_max - depth_min)
         else:
             normalized_depth = np.zeros_like(depth_array)
 
@@ -67,6 +75,7 @@ class DepthVisualizer:
         self,
         result: DepthMapResult,
         output_path: Path,
+        invert: bool = False,
     ) -> Path:
         """Save a depth map visualization to disk.
 
@@ -74,18 +83,21 @@ class DepthVisualizer:
             result: Depth estimation result containing the raw depth array.
             output_path: Destination file path. Parent directories are
                 created automatically.
+            invert: If True, inverts the depth normalization.
 
         Returns:
             The resolved output path.
         """
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        heatmap = self.create_heatmap(result=result)
+        heatmap = self.create_heatmap(result=result, invert=invert)
         Image.fromarray(heatmap).save(output_path)
         logger.info("Saved depth visualization to %s.", output_path)
         return output_path
 
-    def create_grayscale(self, result: DepthMapResult) -> NDArray[np.uint8]:
+    def create_grayscale(
+        self, result: DepthMapResult, invert: bool = False
+    ) -> NDArray[np.uint8]:
         """Create a normalised grayscale depth image before any colormap.
 
         Useful for inspection and as an intermediate for further processing.
@@ -94,6 +106,7 @@ class DepthVisualizer:
 
         Args:
             result: Depth estimation result containing the raw depth array.
+            invert: If True, inverts the normalization.
 
         Returns:
             An ``(H, W)`` uint8 NumPy array representing normalised depth.
@@ -104,7 +117,10 @@ class DepthVisualizer:
         depth_max = np.max(depth_array)
 
         if depth_max - depth_min > 1e-6:
-            normalized = (depth_array - depth_min) / (depth_max - depth_min)
+            if invert:
+                normalized = (depth_max - depth_array) / (depth_max - depth_min)
+            else:
+                normalized = (depth_array - depth_min) / (depth_max - depth_min)
         else:
             normalized = np.zeros_like(depth_array)
 
@@ -114,6 +130,7 @@ class DepthVisualizer:
         self,
         result: DepthMapResult,
         output_path: Path,
+        invert: bool = False,
     ) -> Path:
         """Save a normalised grayscale depth image to disk.
 
@@ -121,13 +138,14 @@ class DepthVisualizer:
             result: Depth estimation result containing the raw depth array.
             output_path: Destination file path. Parent directories are
                 created automatically.
+            invert: If True, inverts the normalization.
 
         Returns:
             The resolved output path.
         """
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        grayscale = self.create_grayscale(result=result)
+        grayscale = self.create_grayscale(result=result, invert=invert)
         Image.fromarray(grayscale, mode="L").save(output_path)
         logger.info("Saved grayscale depth image to %s.", output_path)
         return output_path

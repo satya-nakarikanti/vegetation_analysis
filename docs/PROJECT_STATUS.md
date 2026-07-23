@@ -9,9 +9,9 @@ Phase 5: Relative Scene Geometry
 
 Status: Phase 5.1, Phase 5.2, and Phase 5.3 are completed.
 
-The perception pipeline now combines Grounding DINO, SAM 2, Depth Anything V2,
-Depth Sampling, and the Relative Geometry Engine to generate normalized
-camera-relative `(rx, ry, rz)` coordinates for every detected object.
+The perception pipeline now combines Grounding DINO, SAM 2, Depth Anything V2 Metric,
+Depth Sampling, and the Geometry Engine to generate normalized
+metric camera coordinates (cx, cy, cz) for every detected object, as well as pairwise distance and angular relationships.
 
 Current parallel development:
 
@@ -33,9 +33,13 @@ Current parallel development:
 - The end-to-end segmentation pipeline is validated on real images. FastSAM is officially retired.
 - Phase 5.1 (Depth Anything V2 integration) is complete.
 - Phase 5.2 (Depth Sampling Engine) is complete.
-- Phase 5.3 (Relative Geometry Engine) is complete.
-- The pipeline now produces normalized camera-relative object coordinates.
+- Phase 5.3 (Geometry Engine) is complete.
+- Phase 6.2 (Metric Depth Migration & Repository Cleanup) is complete.
+- Phase 6.3 (Centroid-Based Geometry Validation) is complete.
+- The pipeline now produces metric object coordinates and distances.
+- FastSAM and Hugging Face relative depth dependencies have been permanently removed.
 - Grayscale and colorized depth visualizations are available.
+- Camera-space projection, camera-to-object Euclidean distance, pairwise viewing angles, and centroid distance mathematical validations passed successfully.
 
 ## Completed Phases
 
@@ -230,30 +234,35 @@ Completed work:
 - Complete demo orchestration script (`scripts/run_depth_sampling_demo.py`).
 - Automated tests passing.
 
-### Phase 5.3: Relative Geometry Engine
+### Phase 5.3: Geometry Engine
 
 Status: ✅ Completed.
 
 Completed work:
 
-- Relative Geometry module.
-- Camera-relative coordinate computation.
-- Relative Geometry Engine.
+- Geometry module.
+- Camera metric coordinate computation.
+- Camera-to-object distance.
+- Pairwise angular relationships.
+- Centroid distance mathematical validation (Law of Cosines vs Euclidean).
+- Geometry Engine.
 - Geometry visualization.
 - Grayscale depth visualization.
 - Geometry demo (`scripts/run_geometry_demo.py`).
-- Geometry schemas.
+- Geometry schemas (`GeometricObject`, `ObjectRelationship`).
 - Automated tests.
 
 Outputs:
 
 Each detected object now contains:
 
-- relative_x
-- relative_y
-- relative_z
+- camera_x
+- camera_y
+- camera_z
+- camera_distance
 
 along with its sampled depth statistics.
+Pairwise relationships contain angle, dot_product, and validated centroid distances.
 
 Verification:
 
@@ -263,13 +272,37 @@ Verification:
 - mypy: passed.
 - Geometry demo validated successfully on CUDA.
 
+### Phase 6.2: Metric Depth Migration & Repository Cleanup
+
+Status: ✅ Completed.
+
+Completed work:
+
+- Replaced the Hugging Face relative depth backend with the official Depth Anything V2 Metric implementation.
+- Refactored `depth_loader.py` and `estimator.py` to seamlessly execute the `.pth` metric model.
+- Completed full repository cleanup, permanently deleting FastSAM scripts, tests, utilities, and dependencies (`ultralytics`).
+- Upgraded the final pipeline to output true metric coordinates (meters).
+
+---
+
+### Phase 6.3: Centroid-Based Geometry Validation
+
+Status: ✅ Completed.
+
+Completed work:
+
+- Evaluated camera-to-object distances and confirmed `camera_distance >= camera_z`.
+- Computed angle between camera-to-object vectors using dot product logic.
+- Implemented and validated centroid-to-centroid distance using two independent methods (Law of Cosines vs Direct 3D Euclidean).
+- Confirmed precision match (< 1e-6) between mathematical methods.
+
 ---
 
 ## Current Tasks
 
 - Integrate Tree Species Classification (Phase 4).
 - Merge species metadata into the geometry pipeline.
-- Begin research for metric distance estimation.
+- Implement edge-based engineering measurements (next phase of Phase 6).
 
 ---
 
@@ -277,15 +310,25 @@ Verification:
 
 - Merge Tree Species Classification into the main pipeline.
 - Build a representative evaluation dataset.
-- Implement nearest-point extraction.
-- Design metric calibration strategy.
-- Implement engineering distance estimation.
+- Extract SAM2 object contours (Edge-Based Engineering Measurements).
+- Project contour points into camera space.
+- Compute nearest boundary points.
+- Calculate minimum edge-to-edge clearance.
 ---
 
 ## Future Phases
 
 - Phase 4: Tree Species Classification.
-- Phase 6: Metric Distance Estimation.
+- Phase 6: Apple Depth Pro Evaluation (Retired)
+
+Status:
+Completed and Retired
+
+Summary:
+
+Apple Depth Pro was successfully integrated and experimentally evaluated.
+Although the implementation functioned correctly, inference latency and evaluation results did not satisfy the project's deployment and accuracy requirements.
+The model has therefore been retired and will not be used in the production pipeline.
 - Production API integration.
 - Pipeline parallelization and optimization.
 - Production hardening.
@@ -308,6 +351,7 @@ Completed:
 Current development:
 
 Phase 4 (Tree Species Classification) is under parallel development.
+Next phase is Edge-Based Engineering Measurements.
 
 The current production pipeline is:
 
@@ -321,7 +365,7 @@ SAM 2
 
 +
 
-Depth Anything V2
+Depth Anything V2 Metric (Official)
 
 ↓
 
@@ -329,7 +373,21 @@ Depth Sampling
 
 ↓
 
-Relative Geometry
+Projection
+
+↓
+
+Geometry
+
+---
+
+## Execution Model
+
+The current implementation is sequential.
+
+The AI inference modules are architecturally independent, but the implementation intentionally remains sequential while the pipeline is being validated.
+
+Pipeline parallelization is planned only after the entire pipeline has been verified.
 
 ---
 
@@ -337,9 +395,7 @@ Relative Geometry
 
 - Grounding DINO produces coarse bounding boxes by design.
 - Detection quality depends on prompt wording and confidence thresholds.
-- Depth Anything V2 provides relative depth only.
-- Relative Geometry currently uses object centroids.
-- Nearest-point extraction has not yet been implemented.
+- Nearest-point/edge extraction has not yet been implemented (geometry currently relies on centroids).
 - Metric calibration remains future work.
 
 ---
@@ -376,8 +432,8 @@ Relative Geometry
 
 ## Notes
 
-- Phase 5.1, 5.2, and 5.3 are complete.
-- The perception pipeline is functionally complete.
-- Future work focuses on semantic understanding (species classification) and engineering measurement (metric distance estimation).
+- Phase 5 and Phase 6.2 & 6.3 are complete.
+- The perception pipeline is functionally complete and mathematically verified.
+- Future work focuses on semantic understanding (species classification) and edge-based engineering measurement (clearance/contour extraction).
 - Keep CHANGELOG.md, PROJECT_STATUS.md, TODO.md, and RESEARCH_LOG.md synchronized.
 

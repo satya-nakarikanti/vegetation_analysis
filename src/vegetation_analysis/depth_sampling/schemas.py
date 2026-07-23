@@ -3,6 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
+
+from numpy.typing import NDArray
+
+from vegetation_analysis.grounding.schemas import DetectionBox
 
 
 @dataclass(frozen=True)
@@ -20,6 +25,11 @@ class SampledObject:
         std_depth: The standard deviation of depth values within the mask.
         min_depth: The minimum depth value within the mask.
         max_depth: The maximum depth value within the mask.
+        bounding_box: The bounding box that was used to prompt SAM 2.
+        original_mask: Original boolean mask array from SAM 2.
+        sampling_mask: Eroded mask used for depth extraction.
+        contours: List of boundary contours for the mask (if computed).
+        mask_area_pixels: Total number of True pixels in the original mask.
     """
 
     label: str
@@ -32,6 +42,11 @@ class SampledObject:
     std_depth: float
     min_depth: float
     max_depth: float
+    bounding_box: DetectionBox
+    original_mask: NDArray[Any]
+    sampling_mask: NDArray[Any]
+    contours: tuple[NDArray[Any], ...] | None
+    mask_area_pixels: int
 
 
 @dataclass(frozen=True)

@@ -9,6 +9,7 @@ from vegetation_analysis.depth_sampling.schemas import (
     SampledObject,
 )
 from vegetation_analysis.depth_sampling.visualization import DepthSamplingVisualizer
+from vegetation_analysis.grounding.schemas import DetectionBox
 
 
 def test_sampling_visualizer_creates_overlay() -> None:
@@ -34,6 +35,11 @@ def test_sampling_visualizer_creates_overlay() -> None:
         std_depth=0.1,
         min_depth=4.9,
         max_depth=5.1,
+        bounding_box=DetectionBox(0, 0, 10, 10, "tree", 0.9),
+        original_mask=np.zeros((20, 20), dtype=bool),
+        sampling_mask=np.zeros((20, 20), dtype=bool),
+        contours=(),
+        mask_area_pixels=100,
     )
 
     sampling_result = DepthSamplingResult(

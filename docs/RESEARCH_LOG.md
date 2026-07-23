@@ -4,6 +4,33 @@ This file is the engineering notebook for AI research, technical findings,
 architecture decisions, experiments, comparisons, rejected approaches, and open
 research questions. It should not contain implementation code.
 
+## 2026-07-14 - Apple Depth Pro Evaluation
+
+### Date
+
+2026-07-14
+
+### Research Topic
+
+Experiment: Apple Depth Pro
+
+### Goal
+
+Evaluate monocular metric depth estimation for camera-to-tree and camera-to-pole distance estimation.
+
+### Outcome
+
+✓ Integration successful
+✓ Inference successful
+✓ Indoor depth estimation reasonable
+✗ Utility-pole evaluation not sufficiently promising
+✗ Inference approximately 5 minutes/image on GTX 1650
+
+### Decision
+
+Retired from the project.
+Future work will investigate alternative approaches for metric distance estimation.
+
 ## 2026-07-08 - Relative Geometry Engine and Camera Coordinate System
 
 ### Date
@@ -60,8 +87,7 @@ Phase 5.2: Object-wise Depth Sampling.
 
 ### Objective
 
-Determine the most reliable method for assigning a representative depth value
-to segmented objects.
+Determine the most reliable method for assigning an object depth estimate computed from the segmented object mask.
 
 ### Findings
 
@@ -76,7 +102,7 @@ to segmented objects.
 ### Engineering Decisions
 
 - Use mask-based sampling rather than bounding-box sampling.
-- Store median depth as the primary representative depth value.
+- Store median depth as the primary object depth estimate. (The median depth is used because it is robust to outliers and boundary noise.)
 - Preserve additional statistics (mean, minimum, maximum, standard deviation)
   for future analysis and debugging.
 

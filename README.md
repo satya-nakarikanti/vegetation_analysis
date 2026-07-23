@@ -29,9 +29,9 @@ The project combines modern object detection, image segmentation, monocular dept
           ┌───────────────────┴───────────────────┐
           │                                       │
           ▼                                       ▼
-   Grounding DINO                     Depth Anything V2
+   Grounding DINO                     Depth Anything V2 (Metric)
           │                                       │
- Duplicate Pole Filtering                Relative Depth Map
+ Duplicate Pole Filtering                 Metric Depth Map
           │                                       │
           ▼                                       │
    SAM 2 Segmentation                             │
@@ -42,10 +42,10 @@ The project combines modern object detection, image segmentation, monocular dept
             Depth Sampling Engine
                      │
                      ▼
-          Relative Geometry Engine
+               Geometry Engine
                      │
                      ▼
-       Camera-Relative Object Coordinates
+        Metric Camera Coordinates & Distances
 ```
 
 Future pipeline additions include:
@@ -82,7 +82,6 @@ vegetation_analysis/
 │       ├── depth/
 │       ├── depth_sampling/
 │       ├── geometry/
-│       ├── segmentation/
 │       └── utils/
 │
 ├── tests/
@@ -157,19 +156,12 @@ After cloning the repository:
 ```powershell
 python scripts\verify_environment.py
 pytest
-python scripts\run_demo.py
-python scripts\run_grounding_demo.py
+python scripts\run_geometry_demo.py
 ```
 
 If all three commands succeed, the environment has been configured correctly.
 
 ## Model Weights
-
-Phase 2
-
-FastSAM-s.pt
-
-Used only by the archived segmentation pipeline.
 
 Phase 3A
 
@@ -192,29 +184,7 @@ Run the automated tests
 pytest
 ```
 
-Grounding DINO Demo
 
-```bash
-python scripts/run_grounding_demo.py
-```
-
-SAM 2 Demo
-
-```bash
-python scripts/run_sam2_demo.py
-```
-
-Depth Anything V2 Demo
-
-```bash
-python scripts/run_depth_demo.py
-```
-
-Depth Sampling Demo
-
-```bash
-python scripts/run_depth_sampling_demo.py
-```
 
 Relative Geometry Demo
 

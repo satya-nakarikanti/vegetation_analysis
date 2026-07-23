@@ -27,7 +27,7 @@ from vegetation_analysis.geometry.constants import (
     OVERLAY_FONT_THICKNESS,
     OVERLAY_LINE_SPACING,
 )
-from vegetation_analysis.geometry.geometry_engine import RelativeGeometryEngine
+from vegetation_analysis.geometry.geometry_engine import GeometryEngine
 from vegetation_analysis.geometry.schemas import (
     GeometricObject,
     GeometryImageMetadata,
@@ -44,8 +44,8 @@ __all__ = [
     "OVERLAY_FONT_THICKNESS",
     "OVERLAY_LINE_SPACING",
     "GeometricObject",
+    "GeometryEngine",
     "GeometryImageMetadata",
     "GeometryResult",
     "GeometryVisualizer",
-    "RelativeGeometryEngine",
 ]

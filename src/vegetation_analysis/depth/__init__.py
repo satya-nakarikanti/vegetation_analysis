@@ -12,6 +12,7 @@ from vegetation_analysis.depth.constants import (
     DEFAULT_COLORMAP,
     DEFAULT_DEVICE_PREFERENCE,
     DEFAULT_MODEL_ID,
+    METRIC_MODEL_ID,
 )
 from vegetation_analysis.depth.depth_loader import (
     DepthAnythingLoader,
@@ -26,6 +27,7 @@ __all__ = [
     "DEFAULT_COLORMAP",
     "DEFAULT_DEVICE_PREFERENCE",
     "DEFAULT_MODEL_ID",
+    "METRIC_MODEL_ID",
     "DepthAnythingLoader",
     "DepthAnythingModelConfig",
     "DepthEstimator",

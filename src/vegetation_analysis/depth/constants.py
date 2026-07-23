@@ -13,9 +13,11 @@ from typing import Literal
 # Model identifiers
 # ---------------------------------------------------------------------------
 
-#: Default Hugging Face model identifier for Depth Anything V2 (small variant).
-DEFAULT_MODEL_ID: str = "depth-anything/Depth-Anything-V2-Small-hf"
+#: Default path to the Metric Depth Anything V2 weights.
+DEFAULT_MODEL_ID: str = "third_party/Depth-Anything-V2/checkpoints/depth_anything_v2_metric_vkitti_vits.pth"
 
+#: Alias for the metric model (now the only supported model).
+METRIC_MODEL_ID: str = DEFAULT_MODEL_ID
 # ---------------------------------------------------------------------------
 # Device selection
 # ---------------------------------------------------------------------------

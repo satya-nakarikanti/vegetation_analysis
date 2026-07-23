@@ -6,17 +6,19 @@ import numpy as np
 
 from vegetation_analysis.depth.schemas import DepthMapResult
 from vegetation_analysis.depth.visualization import DepthVisualizer
-from vegetation_analysis.depth_sampling.schemas import (
-    DepthSamplingResult,
-    ImageMetadata,
-    SampledObject,
-)
 from vegetation_analysis.geometry import (
+    GeometryEngine,
     GeometryResult,
     GeometryVisualizer,
-    RelativeGeometryEngine,
 )
 from vegetation_analysis.geometry.schemas import GeometryImageMetadata
+from vegetation_analysis.grounding.schemas import DetectionBox
+from vegetation_analysis.projection.schemas import (
+    CameraIntrinsics,
+    CoordinateSystem,
+    ProjectedObject,
+    ProjectionResult,
+)
 
 
 def _make_depth_result(height: int = 20, width: int = 30) -> DepthMapResult:
@@ -31,7 +33,7 @@ def _make_depth_result(height: int = 20, width: int = 30) -> DepthMapResult:
 
 
 def _make_geometry_result(width: int = 30, height: int = 20) -> GeometryResult:
-    obj = SampledObject(
+    obj = ProjectedObject(
         label="tree",
         confidence=0.9,
         pixel_count=100,
@@ -42,12 +44,30 @@ def _make_geometry_result(width: int = 30, height: int = 20) -> GeometryResult:
         std_depth=0.1,
         min_depth=1.8,
         max_depth=2.2,
+        bounding_box=DetectionBox(0, 0, 10, 10, "tree", 0.9),
+        original_mask=np.zeros((10, 10), dtype=bool),
+        sampling_mask=np.zeros((10, 10), dtype=bool),
+        contours=(),
+        mask_area_pixels=100,
+        camera_x=0.0,
+        camera_y=0.0,
+        camera_z=2.0,
     )
-    sampling = DepthSamplingResult(
+    intrinsics = CameraIntrinsics(
+        fx=1000.0,
+        fy=1000.0,
+        cx=width / 2.0,
+        cy=height / 2.0,
+        image_width=width,
+        image_height=height,
+    )
+    projection = ProjectionResult(
         objects=(obj,),
-        metadata=ImageMetadata(width=width, height=height, depth_model="test"),
+        intrinsics=intrinsics,
+        coordinate_system=CoordinateSystem.RELATIVE,
+        depth_model="test",
     )
-    return RelativeGeometryEngine().compute(sampling)
+    return GeometryEngine().compute(projection)
 
 
 def test_geometry_visualizer_output_shape() -> None:
@@ -71,6 +91,7 @@ def test_geometry_visualizer_empty_result() -> None:
             principal_x=15.0,
             principal_y=10.0,
             depth_model="test",
+            coordinate_system=CoordinateSystem.RELATIVE,
         ),
     )
 
